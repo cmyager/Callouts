@@ -1,4 +1,5 @@
 using Callouts.Data;
+using Callouts.DataContext;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +11,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text;
+using DSharpPlus;
+using DSharpPlus.EventArgs;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
+using Discord.OAuth2;
+//using Discord.WebSocket;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using Plk.Blazor.DragDrop;
+//using Callouts.Bot.Commands;
 
 namespace Callouts
 {
@@ -26,9 +48,57 @@ namespace Callouts
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var folder = Environment.SpecialFolder.LocalApplicationData;
+            var path = Environment.GetFolderPath(folder);
+            var dbPath = $"{path}{System.IO.Path.DirectorySeparatorChar}callouts.db";
+            Console.WriteLine($"DbPath is {dbPath}");
+
+            services.AddDbContextFactory<CalloutsContext>(options => options.UseSqlite($"Data Source={dbPath}"));
+
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+            });
+
+            services.AddAuthentication(opt =>
+            {
+               opt.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+               opt.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+               opt.DefaultChallengeScheme = DiscordDefaults.AuthenticationScheme;
+            })
+            .AddCookie()
+            .AddDiscord(x =>
+            {
+               x.AppId = Configuration["Discord:AppId"];
+               x.AppSecret = Configuration["Discord:AppSecret"];
+               x.SaveTokens = true;
+               x.Scope.Add("guilds");
+            });
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+
+            services.AddHttpClient();
+            var cfg = new DiscordConfiguration
+            {
+                Token = Configuration["Discord:AppSecret"],
+                TokenType = TokenType.Bot,
+                AutoReconnect = true,
+                MinimumLogLevel = LogLevel.Debug
+            };
+            services.AddSingleton<DiscordClient>(s => new DiscordClient(cfg));
+            // Add more singletons here
+
+            services.AddHttpContextAccessor();
+            services.AddBlazorDragDrop();
+            services.AddBlazorise(options =>
+            {
+                options.ChangeTextOnKeyPress = true;
+            })
+            .AddBootstrapProviders()
+            .AddFontAwesomeIcons();
+            services.AddHostedService<BotService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,14 +115,17 @@ namespace Callouts
                 app.UseHsts();
             }
 
+            app.UseForwardedHeaders();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                endpoints.MapDefaultControllerRoute();
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
