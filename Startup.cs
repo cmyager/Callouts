@@ -88,6 +88,7 @@ namespace Callouts
                 MinimumLogLevel = LogLevel.Debug
             };
             services.AddSingleton<DiscordClient>(s => new DiscordClient(cfg));
+            services.AddSingleton<GuildManager>();
             // Add more singletons here
 
             services.AddHttpContextAccessor();

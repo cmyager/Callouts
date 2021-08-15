@@ -13,7 +13,9 @@ namespace Callouts.DataContext
             : base(options)
         {
         }
-        // might need to override OnModelCreating
-        // Need to add dbsets
+
+    // Need to add dbsets
+    public DbSet<Guild> Guilds { get; set; }
+    public DbSet<User> Users { get; set; }
     }
 }

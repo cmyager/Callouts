@@ -23,7 +23,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
-//using Callouts.Bot.Commands;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Callouts
 {
@@ -35,17 +35,25 @@ namespace Callouts
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
 
-        public BotService(DiscordClient client,
-                          IConfiguration config,
-                          ILogger<BotService> logger)
-        {
-            this.Client = client;
-            this.config = config;
-            this.logger = logger;
-        }
-
+        private readonly IServiceProvider services;
+        private readonly GuildManager guildManager;
         private readonly IConfiguration config;
         private readonly ILogger<BotService> logger;
+        private readonly IDbContextFactory<CalloutsContext> ContextFactory;
+
+        public BotService(DiscordClient client,
+                          GuildManager guildManager,
+                          IConfiguration config,
+                          ILogger<BotService> logger,
+                          IDbContextFactory<CalloutsContext> ContextFactory)
+        {
+            this.Client = client;
+            this.guildManager = guildManager;
+            this.config = config;
+            this.logger = logger;
+            this.ContextFactory = ContextFactory;
+        }
+
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -62,12 +70,17 @@ namespace Callouts
                 Timeout = TimeSpan.FromMinutes(2)
             });
 
+            var services = new ServiceCollection();
+            services.AddSingleton<GuildManager>(guildManager);
+            services.AddSingleton<DiscordClient>(Client);
+
             // Set up commands
             this.Commands = this.Client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { config["Discord:prefix"] },
                 EnableDms = true,
-                EnableMentionPrefix = true
+                EnableMentionPrefix = true,
+                Services = services.BuildServiceProvider()
             });
 
             // let's hook some command events, so we know what's going on
@@ -76,28 +89,25 @@ namespace Callouts
 
             // Register commands
             this.Commands.RegisterCommands<ExampleInteractiveCommands>();
+            this.Commands.RegisterCommands<Core>();
 
             // Connect and log in
             await this.Client.ConnectAsync();
         }
-
         public Task StopAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(0);
         }
-
         private Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
         {
             sender.Logger.LogInformation(BotEventId, "Client is ready to process events.");
             return Task.CompletedTask;
         }
-
         private Task Client_GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
         {
             sender.Logger.LogInformation(BotEventId, $"Guild available: {e.Guild.Name}");
             return Task.CompletedTask;
         }
-
         private Task Client_ClientError(DiscordClient sender, ClientErrorEventArgs e)
         {
             sender.Logger.LogError(BotEventId, e.Exception, "Exception occured");
@@ -108,7 +118,6 @@ namespace Callouts
             e.Context.Client.Logger.LogInformation(BotEventId, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'");
             return Task.CompletedTask;
         }
-
         private async Task Commands_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
         {
             e.Context.Client.Logger.LogError(BotEventId, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);

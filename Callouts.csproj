@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+	<NullableReferenceTypes>true</NullableReferenceTypes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,5 +21,7 @@
 	  </PackageReference>
 	  <PackageReference Include="Scrutor" Version="3.3.0" />
   </ItemGroup>
-
+	<ItemGroup>
+		<Folder Include="Migrations\" />
+	</ItemGroup>
 </Project>
