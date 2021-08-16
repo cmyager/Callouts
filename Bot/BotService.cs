@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -35,20 +35,25 @@ namespace Callouts
         public InteractivityExtension Interactivity { get; set; }
         public CommandsNextExtension Commands { get; set; }
 
-        private readonly IServiceProvider services;
         private readonly GuildManager guildManager;
+        private readonly UserManager userManager;
+        private readonly ChannelManager channelManager;
         private readonly IConfiguration config;
         private readonly ILogger<BotService> logger;
         private readonly IDbContextFactory<CalloutsContext> ContextFactory;
 
         public BotService(DiscordClient client,
                           GuildManager guildManager,
+                          UserManager userManager,
+                          ChannelManager channelManager,
                           IConfiguration config,
                           ILogger<BotService> logger,
                           IDbContextFactory<CalloutsContext> ContextFactory)
         {
             this.Client = client;
             this.guildManager = guildManager;
+            this.userManager = userManager;
+            this.channelManager = channelManager;
             this.config = config;
             this.logger = logger;
             this.ContextFactory = ContextFactory;
@@ -57,12 +62,12 @@ namespace Callouts
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            this.Client.Ready += this.Client_Ready;
-            this.Client.GuildAvailable += this.Client_GuildAvailable;
-            this.Client.ClientErrored += this.Client_ClientError;
+            Client.Ready += Client_Ready;
+            Client.GuildAvailable += Client_GuildAvailable;
+            Client.ClientErrored += Client_ClientError;
 
             // Enable interactivity, and set default options
-            this.Client.UseInteractivity(new InteractivityConfiguration
+            Client.UseInteractivity(new InteractivityConfiguration
             {
                 // default pagination behaviour to just ignore the reactions
                 PaginationBehaviour = PaginationBehaviour.Ignore,
@@ -71,11 +76,13 @@ namespace Callouts
             });
 
             var services = new ServiceCollection();
-            services.AddSingleton<GuildManager>(guildManager);
             services.AddSingleton<DiscordClient>(Client);
+            services.AddSingleton<GuildManager>(guildManager);
+            services.AddSingleton<UserManager>(userManager);
+            services.AddSingleton<ChannelManager>(channelManager);
 
             // Set up commands
-            this.Commands = this.Client.UseCommandsNext(new CommandsNextConfiguration
+            Commands = Client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { config["Discord:prefix"] },
                 EnableDms = true,
@@ -84,15 +91,15 @@ namespace Callouts
             });
 
             // let's hook some command events, so we know what's going on
-            this.Commands.CommandExecuted += this.Commands_CommandExecuted;
-            this.Commands.CommandErrored += this.Commands_CommandErrored;
+            Commands.CommandExecuted += Commands_CommandExecuted;
+            Commands.CommandErrored += Commands_CommandErrored;
 
             // Register commands
-            this.Commands.RegisterCommands<ExampleInteractiveCommands>();
-            this.Commands.RegisterCommands<Core>();
+            Commands.RegisterCommands<ExampleInteractiveCommands>();
+            Commands.RegisterCommands<Core>();
 
             // Connect and log in
-            await this.Client.ConnectAsync();
+            await Client.ConnectAsync();
         }
         public Task StopAsync(CancellationToken cancellationToken)
         {
