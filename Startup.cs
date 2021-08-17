@@ -91,6 +91,7 @@ namespace Callouts
                 Intents = DiscordIntents.All
             };
             services.AddSingleton<DiscordClient>(s => new DiscordClient(cfg));
+            services.AddSingleton<UserService>();
             services.AddSingleton<GuildManager>();
             services.AddSingleton<UserManager>();
             services.AddSingleton<ChannelManager>();

@@ -38,7 +38,7 @@ namespace Callouts.Users
         private readonly IConfiguration config;
 
         public string Token { get; set; }
-        public ulong DiscordId { get; set; }        
+        public ulong DiscordId { get; set; }
         public DataContext.User CurrentUser { get; set; }
 
         public CustomAuthStateProvider(NavigationManager navManager, IConfiguration config, IHttpClientFactory clientFactory, UserManager userManager)
@@ -90,7 +90,7 @@ namespace Callouts.Users
         {
             if (CurrentUser == null)
             {
-                CurrentUser = await   userManager.GetUserByUserId(DiscordId);
+                CurrentUser = await userManager.GetUserByUserId(DiscordId);
             }
             var identity = new ClaimsIdentity(new[]
             {
