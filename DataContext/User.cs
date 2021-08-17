@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,6 +20,6 @@ namespace Callouts.DataContext
         public string? XboxName { get; set; }
         public string? PsnName { get; set; }
         public string? StadiaName { get; set; }
-        public int? Platform { get; set; }
+        public Platform Platform { get; set; }
     }
 }

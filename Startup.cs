@@ -64,18 +64,18 @@ namespace Callouts
 
             services.AddAuthentication(opt =>
             {
-               opt.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-               opt.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-               opt.DefaultChallengeScheme = DiscordDefaults.AuthenticationScheme;
+                opt.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                opt.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = DiscordDefaults.AuthenticationScheme;
             })
-            .AddCookie()
-            .AddDiscord(x =>
-            {
-               x.AppId = Configuration["Discord:AppId"];
-               x.AppSecret = Configuration["Discord:AppSecret"];
-               x.SaveTokens = true;
-               x.Scope.Add("guilds");
-            });
+                .AddCookie()
+                .AddDiscord(x =>
+                {
+                    x.AppId = Configuration["Discord:AppId"];
+                    x.AppSecret = Configuration["Discord:AppSecret"];
+                    x.SaveTokens = true;
+                    x.Scope.Add("guilds");
+                });
 
             services.AddRazorPages();
             services.AddServerSideBlazor();
@@ -102,8 +102,8 @@ namespace Callouts
             {
                 options.ChangeTextOnKeyPress = true;
             })
-            .AddBootstrapProviders()
-            .AddFontAwesomeIcons();
+                    .AddBootstrapProviders()
+                    .AddFontAwesomeIcons();
             services.AddHostedService<BotService>();
         }
 
@@ -118,11 +118,11 @@ namespace Callouts
             {
                 app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                //app.UseHsts();
             }
 
             app.UseForwardedHeaders();
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
