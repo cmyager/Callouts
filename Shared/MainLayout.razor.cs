@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Callouts.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;

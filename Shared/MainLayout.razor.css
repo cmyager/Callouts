@@ -31,6 +31,117 @@
         text-overflow: ellipsis;
     }
 
+/*div.characters {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+}
+
+div.character-plate {
+    font-family: -apple-system,BlinkMacSystemFont,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 1rem;
+    font-weight: 400;
+    min-width: 320px;
+    margin-right: 3rem;
+}
+
+a.destiny-character {
+    position: relative;
+    display: block;
+    max-width: 20.5rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+div.emblem-background {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0,0,0,0.25);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+div.character-content {
+    display: flex;
+    z-index: 2;
+    color: #f5f5f5;
+    position: relative;
+}
+
+div.avatar {
+    position: relative;
+    width: 4rem;
+    height: 4rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    overflow: hidden;
+    overflow: hidden;
+}
+
+div.character-info {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    padding-left: 0.75rem;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 0;
+    -ms-flex: 1 0;
+    flex: 1 0;
+    color: #f5f5f5;
+}
+
+div.character-class {
+    padding-bottom: 0.1875rem;
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #f5f5f5;
+}
+
+div.character-race-gender {
+    color: #f5f5f5;
+}
+
+div.character-level {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: end;
+    -webkit-justify-content: flex-end;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
+    padding-right: 0.75rem;
+    padding-bottom: 0.75rem;
+    text-align: right;
+}
+
+div.light {
+    color: #DDCB59;
+}*/
+
 @media (max-width: 640.98px) {
     .top-row:not(.auth) {
         display: none;

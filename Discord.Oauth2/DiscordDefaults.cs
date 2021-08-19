@@ -1,7 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.Authentication;
-using Discord.OAuth2;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Discord.OAuth2
 {

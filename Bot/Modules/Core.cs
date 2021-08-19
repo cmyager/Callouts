@@ -1,29 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
+using Callouts.DataContext;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
-using System.IO;
-using System.Text;
-using DSharpPlus;
 using DSharpPlus.EventArgs;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using System.Threading;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Discord;
-//using Discord.Commands;
-//using Discord.WebSocket;
-using Callouts.DataContext;
-using DSharpPlus.CommandsNext.Exceptions;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Enums;
+using System.Threading.Tasks;
 
 namespace Callouts
 {

@@ -1,7 +1,10 @@
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.EntityFrameworkCore;
+using BungieSharper.Entities;
+using BungieSharper.Entities.Destiny.Responses;
+using BungieSharper.Entities.User;
 using Callouts.DataContext;
+using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Callouts
 {
@@ -40,7 +43,7 @@ namespace Callouts
             return user;
         }
 
-        public async Task<User> GetUserByPlatformId(Platform platform, ulong UserId)
+        public async Task<User> GetUserByPlatformId(BungieMembershipType platform, ulong UserId)
         {
             // TODO: make this work for all the platforms
             using var context = ContextFactory.CreateDbContext();
@@ -60,7 +63,7 @@ namespace Callouts
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateMembershipIds(ulong UserId, ulong XboxId, ulong PsnId, ulong SteamId, ulong StadiaId)
+        public async Task UpdateMembershipIds(ulong UserId, long XboxId, long PsnId, long SteamId, long StadiaId)
         {
             using var context = ContextFactory.CreateDbContext();
             var user = await GetUserByUserId(UserId);
@@ -72,7 +75,7 @@ namespace Callouts
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdatePlatform(ulong UserId, Platform platform)
+        public async Task UpdatePlatform(ulong UserId, BungieMembershipType platform)
         {
             using var context = ContextFactory.CreateDbContext();
             var user = await GetUserByUserId(UserId);
@@ -81,7 +84,7 @@ namespace Callouts
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateRegistration(ulong UserId, ulong BungieId)
+        public async Task UpdateRegistration(ulong UserId, long BungieId)
         {
             using var context = ContextFactory.CreateDbContext();
             var user = await GetUserByUserId(UserId);
@@ -90,5 +93,53 @@ namespace Callouts
             await context.SaveChangesAsync();
         }
 
+        public async Task<User> SyncBungieProfile(ulong UserId, UserMembershipData bungieMembership, DestinyProfileResponse bungieProfile)
+        {
+            using var context = ContextFactory.CreateDbContext();
+            var discordUser = await GetUserByUserId(UserId);
+            discordUser.BungieId = bungieMembership.BungieNetUser.MembershipId;
+            discordUser.BungieName = bungieMembership.BungieNetUser.DisplayName;
+            discordUser.PsnName = bungieMembership.BungieNetUser.PsnDisplayName;
+            discordUser.StadiaName = bungieMembership.BungieNetUser.StadiaDisplayName;
+            discordUser.SteamName = bungieMembership.BungieNetUser.SteamDisplayName;
+            discordUser.XboxName = bungieMembership.BungieNetUser.XboxDisplayName;
+            // Could use a case statement here?
+            foreach (var membership in bungieMembership.DestinyMemberships)
+            {
+                if (membership.MembershipType == BungieMembershipType.TigerPsn)
+                {
+                    discordUser.PsnId = membership.MembershipId;
+                }
+                else if (membership.MembershipType == BungieMembershipType.TigerStadia)
+                {
+                    discordUser.StadiaId = membership.MembershipId;
+                }
+                else if (membership.MembershipType == BungieMembershipType.TigerSteam)
+                {
+                    discordUser.SteamId = membership.MembershipId;
+                }
+                else if (membership.MembershipType == BungieMembershipType.TigerXbox)
+                {
+                    discordUser.XboxId = membership.MembershipId;
+                }
+
+                if (membership.MembershipId == bungieMembership.PrimaryMembershipId)
+                {
+                    discordUser.Platform = membership.MembershipType;
+                }
+            }
+            context.Update(discordUser);
+            await context.SaveChangesAsync();
+            return discordUser;
+        }
+        public async Task<User> ClearBungieProfile(ulong UserId)
+        {
+            using var context = ContextFactory.CreateDbContext();
+            var discordUser = await GetUserByUserId(UserId);
+            discordUser.UnlinkBungieAccount();
+            context.Update(discordUser);
+            await context.SaveChangesAsync();
+            return discordUser;
+        }
     }
 }

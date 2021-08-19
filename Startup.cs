@@ -1,37 +1,22 @@
-using Callouts.Data;
-using Callouts.DataContext;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO;
-using System.Text;
-using DSharpPlus;
-using DSharpPlus.EventArgs;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
+using BungieSharper.Client;
+using Callouts.Data;
+using Callouts.DataContext;
 using Discord.OAuth2;
-//using Discord.WebSocket;
+using DSharpPlus;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Plk.Blazor.DragDrop;
-//using Callouts.Bot.Commands;
+using System;
 
 namespace Callouts
 {
@@ -71,8 +56,8 @@ namespace Callouts
                 .AddCookie()
                 .AddDiscord(x =>
                 {
-                    x.AppId = Configuration["Discord:AppId"];
-                    x.AppSecret = Configuration["Discord:AppSecret"];
+                    x.AppId = Configuration["Discord:ClientId"];
+                    x.AppSecret = Configuration["Discord:ClientSecret"];
                     x.SaveTokens = true;
                     x.Scope.Add("guilds");
                 });
@@ -81,16 +66,25 @@ namespace Callouts
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
 
-            services.AddHttpClient();
+            var bungiecfg = new BungieClientConfig
+            {
+                ApiKey = Configuration["Bungie:ApiKey"],
+                OAuthClientId = uint.Parse(Configuration["Bungie:ClientId"]),
+                OAuthClientSecret = Configuration["Bungie:ClientSecret"],
+                RateLimit = byte.Parse(Configuration["Bungie:RateLimit"])
+            };
+
             var cfg = new DiscordConfiguration
             {
-                Token = Configuration["Discord:AppSecret"],
+                Token = Configuration["Discord:BotToken"],
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Debug,
                 Intents = DiscordIntents.All
             };
-            services.AddSingleton<DiscordClient>(s => new DiscordClient(cfg));
+
+            services.AddSingleton(s => new DiscordClient(cfg));
+            services.AddSingleton(s => new BungieService(bungiecfg));
             services.AddSingleton<UserService>();
             services.AddSingleton<GuildManager>();
             services.AddSingleton<UserManager>();

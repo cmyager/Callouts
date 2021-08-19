@@ -1,7 +1,7 @@
-using System.Linq;
-using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Callouts
 {
@@ -15,7 +15,7 @@ namespace Callouts
 
         public async Task<DiscordChannel> GetChannel(DiscordGuild guild, string channelName)
         {
-            var channel = guild.Channels.FirstOrDefault(p => p.Value.Name == channelName).Value;
+            var channel = (await guild.GetChannelsAsync()).FirstOrDefault(p => p.Name == channelName);
             if (channel == null)
             {
                 channel = await guild.CreateChannelAsync(channelName, ChannelType.Text);

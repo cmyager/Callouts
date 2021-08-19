@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using System.Threading;
+﻿using Callouts.DataContext;
 using Microsoft.EntityFrameworkCore;
-using Callouts.DataContext;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Callouts
 {
