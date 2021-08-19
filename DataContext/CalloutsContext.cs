@@ -9,7 +9,7 @@ namespace Callouts.DataContext
         {
         }
 
-    // Need to add dbsets
+    // TODO: Need to add dbsets
     public DbSet<Guild> Guilds { get; set; }
     public DbSet<User> Users { get; set; }
     }

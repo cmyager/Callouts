@@ -4,6 +4,7 @@
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                     <NotAuthorized>
+                        @*TODO: Add this back or remove it?*@
                         <Callouts.Pages.RedirectToLogin />
                     </NotAuthorized>
                 </AuthorizeRouteView>

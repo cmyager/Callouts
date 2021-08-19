@@ -24,31 +24,19 @@ namespace Callouts.DataContext
     public class User
     {
         [Key]
-        public ulong UserId { get; set; }
+        public ulong DiscordUserId { get; set; }
         public long? BungieId { get; set; }
-        public long? SteamId { get; set; }
-        public long? XboxId { get; set; }
-        public long? PsnId { get; set; }
-        public long? StadiaId { get; set; }
         public string? BungieName { get; set; }
-        public string? SteamName { get; set; }
-        public string? XboxName { get; set; }
-        public string? PsnName { get; set; }
-        public string? StadiaName { get; set; }
+        public long? PrimaryPlatformId { get; set; }
+        public string? PrimaryPlatformName { get; set; }
         public BungieMembershipType Platform { get; set; }
 
         public void UnlinkBungieAccount()
         {
             this.BungieId = null;
-            this.SteamId = null;
-            this.XboxId = null;
-            this.PsnId = null;
-            this.StadiaId = null;
             this.BungieName = null;
-            this.SteamName = null;
-            this.XboxName = null;
-            this.PsnName = null;
-            this.StadiaName = null;
+            this.PrimaryPlatformId = null;
+            this.PrimaryPlatformName = null;
             this.Platform = BungieMembershipType.None;
         }
     }

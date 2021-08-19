@@ -89,7 +89,7 @@ namespace Callouts
             services.AddSingleton<GuildManager>();
             services.AddSingleton<UserManager>();
             services.AddSingleton<ChannelManager>();
-            // Add more singletons here
+            // TODO: Add more singletons here
 
             services.AddHttpContextAccessor();
             services.AddBlazorDragDrop();

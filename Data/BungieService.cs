@@ -1,9 +1,12 @@
-﻿using BungieSharper.Client;
+using BungieSharper.Client;
 using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny;
 using BungieSharper.Entities.Destiny.Config;
+using BungieSharper.Entities.Destiny.HistoricalStats;
+using BungieSharper.Entities.Destiny.HistoricalStats.Definitions;
 using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -18,6 +21,7 @@ namespace Callouts.Data
         {
             Client = new BungieApiClient(cfg);
             // This can run in the background
+            // TODO: Some sort of periodic to update this
             _ = UpdateManifest();
         }
         public async Task UpdateManifest()

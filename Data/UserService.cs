@@ -11,6 +11,8 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
+// TODO: only allow authentication for people that are in a guild
+// TODO: Rewrite to use discord client?
 namespace Callouts.Data
 {
     public class UserService
