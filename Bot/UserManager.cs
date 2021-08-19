@@ -5,15 +5,79 @@ using Callouts.DataContext;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
+using Callouts.DataContext;
+using DSharpPlus;
+using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
+using Callouts.DataContext;
+using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.EventArgs;
+using System.Threading.Tasks;
+using Callouts.DataContext;
+using DSharpPlus;
+using DSharpPlus.EventArgs;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Callouts
 {
     public class UserManager
     {
         private readonly IDbContextFactory<CalloutsContext> ContextFactory;
-        public UserManager(IDbContextFactory<CalloutsContext> contextFactory)
+        //private readonly DiscordClient Client;
+        public UserManager(IDbContextFactory<CalloutsContext> contextFactory, DiscordClient client)
         {
             ContextFactory = contextFactory;
+            //Client = client;
+            //client.Ready += RemoveOfflineUsers;
+            client.GuildMemberRemoved += RemoveGuildMemberRemoved;
+            //client.GuildMemberAdded += AddGuildMember;
+        }
+
+        // This is a possible todo.
+        //public async Task RemoveOfflineUsers(DiscordClient sender, ReadyEventArgs e)
+        //{
+        //}
+
+        // This is mainly for testing. I don't think I want to register everyone the moment they join the server
+        //public async Task AddGuildMember(DiscordClient sender, GuildMemberAddEventArgs e)
+        //{
+        //    await GetUserByUserId(e.Member.Id);
+        //}
+
+        public async Task RemoveGuildMemberRemoved(DiscordClient sender, GuildMemberRemoveEventArgs e)
+        { 
+            bool found = false;
+            foreach (var guild in sender.Guilds)
+            {
+                if (found)
+                {
+                    break;
+                }
+                foreach (var member in (await guild.Value.GetAllMembersAsync()))
+                {
+                    if (member.Id == e.Member.Id)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found)
+            {
+                _ = RemoveUser(e.Member.Id);
+            }
         }
 
         public async Task<User> GetUserByUserId(ulong UserId)
@@ -51,6 +115,7 @@ namespace Callouts
                 .FirstOrDefaultAsync(p => p.UserId == UserId,
                                      cancellationToken: CancellationToken.None);
         }
+
         public async Task UpdateDisplayNames(ulong UserId, string XboxName, string PsnName, string SteamName, string StadiaName)
         {
             using var context = ContextFactory.CreateDbContext();
@@ -132,6 +197,7 @@ namespace Callouts
             await context.SaveChangesAsync();
             return discordUser;
         }
+
         public async Task<User> ClearBungieProfile(ulong UserId)
         {
             using var context = ContextFactory.CreateDbContext();
