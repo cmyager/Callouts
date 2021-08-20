@@ -1,0 +1,45 @@
+﻿@page "/newevent"
+
+<h2>New Event</h2>
+
+<Form>
+    <Field ColumnSize="ColumnSize.Is2">
+        <FieldLabel>Title</FieldLabel>
+        <TextEdit Placeholder="Event Name"></TextEdit>
+    </Field>
+    <Field ColumnSize="ColumnSize.Is4">
+        <FieldLabel>Description</FieldLabel>
+        <MemoEdit Placeholder="Event Description" Rows="4"></MemoEdit>
+    </Field>
+    <Field ColumnSize="ColumnSize.Is4">
+        <FieldLabel>
+            Date/Time (US/Central)
+        </FieldLabel>
+        <DateEdit TValue="DateTime?" InputMode="DateInputMode.DateTime" />
+    </Field>
+    <Field ColumnSize="ColumnSize.Is4">
+        <FieldLabel>
+            Max Attendees (Optional)
+        </FieldLabel>
+        <Select TValue="int">
+            <SelectItem Value="2">2</SelectItem>
+            <SelectItem Value="3">3</SelectItem>
+            <SelectItem Value="4">4</SelectItem>
+            <SelectItem Value="5">5</SelectItem>
+        </Select>
+    </Field>
+    <Field ColumnSize="ColumnSize.Is4">
+        <FieldLabel>
+            Invite Members
+        </FieldLabel>
+        <!--
+            <Select Multiple="true">
+                @foreach (var member in members)
+                {
+                <SelectItem Value="member.Id">@member</SelectItem>
+                }
+            </Select>
+        -->
+    </Field>
+
+</Form>
