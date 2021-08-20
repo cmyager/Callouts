@@ -92,7 +92,7 @@ namespace Callouts
 
             // Register commands
             //Commands.RegisterCommands<ExampleInteractiveCommands>();
-            // Commands.RegisterCommands<Core>();
+            Commands.RegisterCommands<Core>();
             Commands.RegisterCommands<Stats>();
 
             // Connect and log in
