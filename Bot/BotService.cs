@@ -1,4 +1,4 @@
-﻿using Callouts.DataContext;
+using Callouts.DataContext;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Callouts.Data;
 
 namespace Callouts
 {
@@ -29,6 +30,7 @@ namespace Callouts
         private readonly GuildManager guildManager;
         private readonly UserManager userManager;
         private readonly ChannelManager channelManager;
+        private readonly BungieService bungieService;
         private readonly IConfiguration config;
         private readonly ILogger<BotService> logger;
         private readonly IDbContextFactory<CalloutsContext> ContextFactory;
@@ -37,6 +39,7 @@ namespace Callouts
                           GuildManager guildManager,
                           UserManager userManager,
                           ChannelManager channelManager,
+                          BungieService bungieService,
                           IConfiguration config,
                           ILogger<BotService> logger,
                           IDbContextFactory<CalloutsContext> ContextFactory)
@@ -45,6 +48,7 @@ namespace Callouts
             this.guildManager = guildManager;
             this.userManager = userManager;
             this.channelManager = channelManager;
+            this.bungieService = bungieService;
             this.config = config;
             this.logger = logger;
             this.ContextFactory = ContextFactory;
@@ -71,6 +75,7 @@ namespace Callouts
             services.AddSingleton<GuildManager>(guildManager);
             services.AddSingleton<UserManager>(userManager);
             services.AddSingleton<ChannelManager>(channelManager);
+            services.AddSingleton<BungieService>(bungieService);
 
             // Set up commands
             Commands = Client.UseCommandsNext(new CommandsNextConfiguration
@@ -87,7 +92,8 @@ namespace Callouts
 
             // Register commands
             Commands.RegisterCommands<ExampleInteractiveCommands>();
-            Commands.RegisterCommands<Core>();
+            // Commands.RegisterCommands<Core>();
+            Commands.RegisterCommands<Stats>();
 
             // Connect and log in
             await Client.ConnectAsync();

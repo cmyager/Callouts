@@ -1,23 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using BungieSharper.Entities;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using BungieSharper.Client;
-using BungieSharper.Entities;
-using BungieSharper.Entities.User;
-using BungieSharper.Entities.Destiny.Responses;
-using System.Threading.Tasks;
-using BungieSharper.Client;
-using BungieSharper.Entities;
-using BungieSharper.Entities.User;
-using BungieSharper.Entities.Destiny;
-using BungieSharper.Entities.Destiny.Config;
-using BungieSharper.Entities.Exceptions;
-using BungieSharper.Entities.Destiny.Responses;
 
 namespace Callouts.DataContext
 {

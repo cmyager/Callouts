@@ -84,11 +84,11 @@ namespace Callouts
         {
             using var context = ContextFactory.CreateDbContext();
             var user = await context.Users.AsQueryable()
-                .FirstOrDefaultAsync(p => p.UserId == UserId,
+                .FirstOrDefaultAsync(p => p.DiscordUserId == UserId,
                                      cancellationToken: CancellationToken.None);
             if (user == null)
             {
-                user = new User() { UserId = UserId };
+                user = new User() { DiscordUserId = UserId };
                 context.Add(user);
                 await context.SaveChangesAsync();
             }
@@ -109,35 +109,11 @@ namespace Callouts
 
         public async Task<User> GetUserByPlatformId(BungieMembershipType platform, ulong UserId)
         {
-            // TODO: make this work for all the platforms
+            // TODO: make this work for all the platforms////////
             using var context = ContextFactory.CreateDbContext();
             return await context.Users.AsQueryable()
-                .FirstOrDefaultAsync(p => p.UserId == UserId,
+                .FirstOrDefaultAsync(p => p.DiscordUserId == UserId,
                                      cancellationToken: CancellationToken.None);
-        }
-
-        public async Task UpdateDisplayNames(ulong UserId, string XboxName, string PsnName, string SteamName, string StadiaName)
-        {
-            using var context = ContextFactory.CreateDbContext();
-            var user = await GetUserByUserId(UserId);
-            user.XboxName = XboxName;
-            user.PsnName = PsnName;
-            user.SteamName = SteamName;
-            user.StadiaName = StadiaName;
-            context.Update(user);
-            await context.SaveChangesAsync();
-        }
-
-        public async Task UpdateMembershipIds(ulong UserId, long XboxId, long PsnId, long SteamId, long StadiaId)
-        {
-            using var context = ContextFactory.CreateDbContext();
-            var user = await GetUserByUserId(UserId);
-            user.XboxId = XboxId;
-            user.PsnId = PsnId;
-            user.SteamId = SteamId;
-            user.StadiaId = StadiaId;
-            context.Update(user);
-            await context.SaveChangesAsync();
         }
 
         public async Task UpdatePlatform(ulong UserId, BungieMembershipType platform)
@@ -164,33 +140,15 @@ namespace Callouts
             var discordUser = await GetUserByUserId(UserId);
             discordUser.BungieId = bungieMembership.BungieNetUser.MembershipId;
             discordUser.BungieName = bungieMembership.BungieNetUser.DisplayName;
-            discordUser.PsnName = bungieMembership.BungieNetUser.PsnDisplayName;
-            discordUser.StadiaName = bungieMembership.BungieNetUser.StadiaDisplayName;
-            discordUser.SteamName = bungieMembership.BungieNetUser.SteamDisplayName;
-            discordUser.XboxName = bungieMembership.BungieNetUser.XboxDisplayName;
+
             // Could use a case statement here?
             foreach (var membership in bungieMembership.DestinyMemberships)
             {
-                if (membership.MembershipType == BungieMembershipType.TigerPsn)
-                {
-                    discordUser.PsnId = membership.MembershipId;
-                }
-                else if (membership.MembershipType == BungieMembershipType.TigerStadia)
-                {
-                    discordUser.StadiaId = membership.MembershipId;
-                }
-                else if (membership.MembershipType == BungieMembershipType.TigerSteam)
-                {
-                    discordUser.SteamId = membership.MembershipId;
-                }
-                else if (membership.MembershipType == BungieMembershipType.TigerXbox)
-                {
-                    discordUser.XboxId = membership.MembershipId;
-                }
-
                 if (membership.MembershipId == bungieMembership.PrimaryMembershipId)
                 {
                     discordUser.Platform = membership.MembershipType;
+                    discordUser.PrimaryPlatformId = membership.MembershipId;
+                    discordUser.PrimaryPlatformName = membership.DisplayName;
                 }
             }
             context.Update(discordUser);

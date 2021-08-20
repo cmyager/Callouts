@@ -29,7 +29,9 @@ namespace Callouts.Pages
         UserService userService { get; set; }
 
         private User DiscordUserInfo = null;
-        private long userSubmitBungieId { get; set; } // = 5396677;
+
+        //TODO: Remove my ID. Makes debugging easier for now
+        private long userSubmitBungieId { get; set; } = 5396677;
         private UserMembershipData bungieProfile { get; set; }
         private DestinyProfileResponse PrimaryCharacterProfile { get; set; }
 
@@ -96,7 +98,7 @@ namespace Callouts.Pages
                 {
                     CharacterErrorAlert.Show();
                 }
-                DiscordUserInfo = await userManager.SyncBungieProfile(DiscordUserInfo.UserId, bungieProfile, PrimaryCharacterProfile);
+                DiscordUserInfo = await userManager.SyncBungieProfile(DiscordUserInfo.DiscordUserId, bungieProfile, PrimaryCharacterProfile);
             }
 
 
@@ -104,7 +106,7 @@ namespace Callouts.Pages
 
         public async Task ClearBungieProfile()
         {
-            DiscordUserInfo = await userManager.ClearBungieProfile(DiscordUserInfo.UserId);
+            DiscordUserInfo = await userManager.ClearBungieProfile(DiscordUserInfo.DiscordUserId);
             bungieProfile = null;
             PrimaryCharacterProfile = null;
 

@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Plk.Blazor.DragDrop;
 using System;
+using System.IO;
 
 namespace Callouts
 {
@@ -35,9 +36,10 @@ namespace Callouts
         {
             var folder = Environment.SpecialFolder.LocalApplicationData;
             var path = Environment.GetFolderPath(folder);
-            var dbPath = $"{path}{System.IO.Path.DirectorySeparatorChar}callouts.db";
-            // TODO: REMOVE THIS. AFTER GETTING IT WORKING
-            dbPath = "C:\\Users\\clayt\\source\\repos\\Callouts\\callouts.db";
+            var dbPath = $"{path}{Path.DirectorySeparatorChar}callouts.db";
+            
+            // TODO: Remove this later on once it is closer to done
+            dbPath = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}callouts.db"; 
             Console.WriteLine($"DbPath is {dbPath}");
 
             services.AddDbContextFactory<CalloutsContext>(options => options.UseSqlite($"Data Source={dbPath}"));
