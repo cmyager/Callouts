@@ -1,34 +1,39 @@
 ﻿@page "/bungie"
 
 <Alert @ref="AccountErrorAlert" Color="Color.Warning">
-    No Bungie.net account found with that ID
+    <!--No Bungie.net account found with that ID-->
+    @alertText
     <CloseButton />
 </Alert>
 <Alert @ref="CharacterErrorAlert" Color="Color.Warning">
-    No Destiny Characters found on this Bungie.net account
+    <!--No Destiny Characters found on this Bungie.net account-->
+    @alertText
     <CloseButton />
 </Alert>
 <Alert @ref="UnlinkAlert" Color="Color.Warning">
-    Bungie.net account has been unlinked
+    <!--Bungie.net account has been unlinked-->
+    @alertText
     <CloseButton />
 </Alert>
 
 <h1>Bungie.net Info</h1>
 @if (DiscordUserInfo.BungieId is null)
 {
-    <Div Name="test">
-        <p>TODO: Clayton Add an alert here or something for when it fails.</p>
-        <p>You can link your bungie account by submitting the user ID that can be found on your profile page under your username</p>
-        <Button Color="Color.Primary" Target="Target.Blank" Type="ButtonType.Link" To="https://www.bungie.net/en/Profile">
-            Open Bungie.net Profile
-        </Button>
-    </Div>
-    <Div>
-        <input type="number" @bind-value="@userSubmitBungieId" />
-        <Button Color="Color.Primary" Clicked="GetBungieProfile">
-            Submit
-        </Button>
-    </Div>
+    <Column ColumnSize="ColumnSize.Is12">
+        <Row>
+            <div>
+                <p>TODO: Clayton Add an alert here or something for when it fails.</p>
+                <p>You can link your bungie account by submitting the user ID that can be found on your profile page under your username</p>
+                <Button Color="Color.Primary" Target="Target.Blank" Type="ButtonType.Link" To="https://www.bungie.net/en/Profile">
+                    Open Bungie.net Profile
+                </Button><br />
+                <TextEdit Placeholder="Bungie ID" Text="5396677" @bind-value="@userSubmitBungieId" Class="bungie-id-input" />
+                <Button Color="Color.Primary" Clicked="GetBungieProfile">
+                    Submit
+                </Button>
+            </div>
+        </Row>
+    </Column>
 }
 else
 {
@@ -38,53 +43,30 @@ else
 
     @if (PrimaryCharacterProfile != null)
     {
-
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHeaderCell>ID</TableHeaderCell>
-                    <TableHeaderCell>Class</TableHeaderCell>
-                    <TableHeaderCell>Race</TableHeaderCell>
-                    <TableHeaderCell>Gender</TableHeaderCell>
-                    <TableHeaderCell>Light</TableHeaderCell>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                @foreach (var character in PrimaryCharacterProfile.Characters.Data.Values)
-                {
-                <TableRow>
-                    <TableRowCell>@character.CharacterId</TableRowCell>
-                    <TableRowCell>@character.ClassType</TableRowCell>
-                    <TableRowCell>@character.RaceType</TableRowCell>
-                    <TableRowCell>@character.GenderType </TableRowCell>
-                    <TableRowCell>@character.Light</TableRowCell>
-                </TableRow>
-                }
-            </TableBody>
-        </Table>
-
-        @*<div class="characters">
-                @foreach (var character in PrimaryCharacterProfile.Characters.Data.Values)
-                {
-                    <div class="character-plate">
+        <Column ColumnSize="ColumnSize.Is12">
+            @foreach (var character in PrimaryCharacterProfile.Characters.Data.Values)
+            {
+                    <div class="character-plate" style="float:left;">
                         <a href="#" class="destiny-character" data-membership-type="@character.MembershipType.ToString()" data-membership-id="@character.MembershipId" data-character-id="@character.CharacterId">
-                            <div class="emblem-background" style="background-image: url('@($"https://www.bungie.net{character.EmblemBackgroundPath}")');"></div>
-                            <div class="emblem-background" style="background-image: url('https://www.bungie.net/common/destiny2_content/icons/3e99d575d00fb307c15fb5513dee13c6.jpg');"></div>
-                            <div class="character-content">
-                                <div class="avatar" style="background-image: url(@($"https://www.bungie.net{character.EmblemBackgroundPath}"))"></div>
-                                <div class="character-info">
-                                    <div class="character-class">Warlock</div>
-                                    <div class="character-race-gender">
-                                        Exo Male
+                            <div class="emblem-background" style="background-image: url('@($"https://www.bungie.net{character.EmblemBackgroundPath}")');">
+                                <div class="character-content">
+                                    <div class="avatar" style="background-image: url(@($"https://www.bungie.net{character.EmblemPath}"))"></div>
+                                    <div class="character-info">
+                                        <div class="character-class">@character.ClassType</div>
+                                        <div class="character-race-gender">
+                                            @character.RaceType - @character.GenderType
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="character-level">
-                                    <div class="light">1341</div>
+                                    <div class="character-level">
+                                        <div class="light">@character.Light</div>
+                                    </div>
                                 </div>
                             </div>
                         </a>
                     </div>
-                }
-            </div>*@
+            }
+
+
+        </Column>
     }
 }

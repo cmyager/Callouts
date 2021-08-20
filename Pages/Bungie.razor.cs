@@ -39,7 +39,7 @@ namespace Callouts.Pages
         Alert UnlinkAlert;
         Alert CharacterErrorAlert;
 
-
+        private string alertText = "booba";
 
 
         protected override async Task OnInitializedAsync()
@@ -62,8 +62,7 @@ namespace Callouts.Pages
             AccountErrorAlert.Hide();
             UnlinkAlert.Hide();
             CharacterErrorAlert.Hide();
-
-
+            CharacterErrorAlert.Show();
             if (bungieProfile == null)
             {
                 bungieProfile = await bungieService.GetUserById(userSubmitBungieId, BungieMembershipType.BungieNext);
@@ -71,10 +70,12 @@ namespace Callouts.Pages
 
             if (bungieProfile == null)
             {
+                alertText = "null";
                 AccountErrorAlert.Show();
             }
             else if (bungieProfile.DestinyMemberships == null || bungieProfile.DestinyMemberships.Count() == 0)
             {
+                alertText = "count 0";
                 CharacterErrorAlert.Show();
             }
             else
@@ -90,7 +91,8 @@ namespace Callouts.Pages
                 {
                     primaryMembershipType = bungieProfile.DestinyMemberships.First(p => p.MembershipId == bungieProfile.PrimaryMembershipId).MembershipType;
                 }
-                
+                alertText = "found";
+
                 List<DestinyComponentType> Components = new() { DestinyComponentType.Characters };
 
                 PrimaryCharacterProfile = await bungieService.GetProfile(primaryMembershipId, primaryMembershipType, Components);
