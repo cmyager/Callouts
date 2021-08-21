@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Callouts.DataContext
@@ -8,7 +8,7 @@ namespace Callouts.DataContext
         [Key]
         public ulong GuildId { get; set; }
 
-        // TODO: Add ability to change server prefix
+        // TODO: Add ability to change server prefix?
         public string Prefix { get; set; } = "!";
         public Boolean ClearSpam { get; set; } = true;
 

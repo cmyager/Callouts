@@ -1,4 +1,4 @@
-﻿using BungieSharper.Client;
+using BungieSharper.Client;
 using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny;
 using BungieSharper.Entities.Destiny.Config;
@@ -62,27 +62,72 @@ namespace Callouts.Data
             return profile;
         }
 
-        //public async Task<Dictionary<string, DestinyHistoricalStatsByPeriod>> GetHistoricalStats(long characterId, long destinyMembershipId, BungieMembershipType membershipType, DateTime? dayend = null,
-        //    DateTime? daystart = null, IEnumerable<DestinyStatsGroupType>? groups = null, IEnumerable<DestinyActivityModeType>? modes = null, PeriodType? periodType = null)
-        public async Task<Dictionary<string, DestinyHistoricalStatsByPeriod>> GetHistoricalStats(long destinyMembershipId, BungieMembershipType membershipType, IEnumerable<DestinyActivityModeType> modes)
+        public async Task<Dictionary<string, DestinyHistoricalStatsByPeriod>> GetHistoricalStats(long destinyMembershipId, BungieMembershipType membershipType, IEnumerable<DestinyActivityModeType>? modes,
+            long characterId = 0, DateTime? dayend = null, DateTime? daystart = null, IEnumerable<DestinyStatsGroupType>? groups = null, PeriodType? periodType = null)
         {
             Dictionary<string, DestinyHistoricalStatsByPeriod> stats = null;
 
-            long allCharactersId = 0;
             var groupType = new List<DestinyStatsGroupType> { DestinyStatsGroupType.General };
             try
             {
-                stats = await Client.Api.Destiny2_GetHistoricalStats(allCharactersId, destinyMembershipId, membershipType, null, null, groupType, modes, null);
+                stats = await Client.Api.Destiny2_GetHistoricalStats(characterId, destinyMembershipId, membershipType, dayend, daystart, groups, modes, periodType);
             }
             catch (NonRetryErrorCodeException) {}
             return stats;
         }
 
+        // TODO: Figure out a better place for these. I want to use them in both the web and bot
+        // TODO: Might need to store user and type in these to make then useful for the web?
         public class PvPStats
         {
-            public PvPStats(Dictionary<string, DestinyHistoricalStatsByPeriod> pvp_stats)
+            public string TimePlayed = "-";
+            public string Kdr = "-";
+            public string Kda = "-";
+            public string BestWeapon = "-";
+            public string GamesPlayed = "-";
+            public string BestSingleGameKills = "-";
+            public string LongestSpree = "-";
+            public string CombatRating = "-";
+            public string Kills = "-";
+            public string Assists = "-";
+            public string Deaths = "-";
+            public string WinRate = "-";
+            public string AverageLifeSpan = "-";
+            public string LongestLife = "-";
+            public string LongestKillDistance = "-";
+            public string ActivitiesWon = "-";
+            // TODO: Could find 2 more stats to fill out the embed row
+
+            private Dictionary<string, DestinyHistoricalStatsValue> stats;
+
+            public PvPStats(Dictionary<string, DestinyHistoricalStatsValue> pvp_stats)
             {
-                var x = 5;
+                stats = pvp_stats;
+                BuildStats();
+            }
+            private void BuildStats()
+            {
+                TimePlayed = stats["secondsPlayed"].Basic.DisplayValue;
+                Kdr = stats["killsDeathsRatio"].Basic.DisplayValue;
+                Kda = stats["killsDeathsAssists"].Basic.DisplayValue;
+                BestWeapon = stats["weaponBestType"].Basic.DisplayValue;
+                GamesPlayed = stats["activitiesEntered"].Basic.DisplayValue;
+                BestSingleGameKills = stats["bestSingleGameKills"].Basic.DisplayValue;
+                LongestSpree = stats["longestKillSpree"].Basic.DisplayValue;
+                CombatRating = stats["combatRating"].Basic.DisplayValue;
+                Kills = stats["kills"].Basic.DisplayValue;
+                Assists = stats["assists"].Basic.DisplayValue;
+                Deaths = stats["deaths"].Basic.DisplayValue;
+                AverageLifeSpan = stats["averageLifespan"].Basic.DisplayValue;
+                LongestLife = stats["longestSingleLife"].Basic.DisplayValue;
+                LongestKillDistance = stats["longestKillDistance"].Basic.DisplayValue;
+                ActivitiesWon = stats["activitiesWon"].Basic.DisplayValue;
+                WinRate = $"{CalculateWinRate()}%";
+            }
+            private double CalculateWinRate()
+            {
+                double winLossRatio = stats["winLossRatio"].Basic.Value;
+                return Math.Round((winLossRatio / (winLossRatio + 1)) * 100, 1);
             }
         }
 
@@ -91,9 +136,9 @@ namespace Callouts.Data
             // All PvE Stats
             public string TimePlayed = "-";
             public string BestWeapon = "-";
-            public string kills = "-";
-            public string assists = "-";
-            public string deaths = "-";
+            public string Kills = "-";
+            public string Assists = "-";
+            public string Deaths = "-";
             public string AverageLifeSpan = "-";
             public string BestSingleGameKills = "-";
             public string OpponentsDefeated = "-";
@@ -114,16 +159,23 @@ namespace Callouts.Data
             public string NightFallCount = "-";
             public string FastestNightfall = "-";
 
+            private Dictionary<string, DestinyHistoricalStatsByPeriod> stats;
+
             public PvEStats(Dictionary<string, DestinyHistoricalStatsByPeriod> pve_stats)
             {
-                var allPve = pve_stats.GetValueOrDefault("allPvE");
+                stats = pve_stats;
+                BuildStats();
+            }
+            private void BuildStats()
+            {
+                var allPve = stats.GetValueOrDefault("allPvE");
                 if (allPve != null)
                 {
                     TimePlayed = allPve.AllTime["totalActivityDurationSeconds"].Basic.DisplayValue;
                     BestWeapon = allPve.AllTime["weaponBestType"].Basic.DisplayValue;
-                    kills = allPve.AllTime["kills"].Basic.DisplayValue;
-                    assists = allPve.AllTime["assists"].Basic.DisplayValue;
-                    deaths = allPve.AllTime["deaths"].Basic.DisplayValue;
+                    Kills = allPve.AllTime["kills"].Basic.DisplayValue;
+                    Assists = allPve.AllTime["assists"].Basic.DisplayValue;
+                    Deaths = allPve.AllTime["deaths"].Basic.DisplayValue;
                     AverageLifeSpan = allPve.AllTime["averageLifespan"].Basic.DisplayValue;
                     BestSingleGameKills = allPve.AllTime["bestSingleGameKills"].Basic.DisplayValue;
                     OpponentsDefeated = allPve.AllTime["opponentsDefeated"].Basic.DisplayValue;
@@ -134,20 +186,39 @@ namespace Callouts.Data
                     HeroicEventCount = allPve.AllTime["heroicPublicEventsCompleted"].Basic.DisplayValue;
                 }
 
-                var allStrikes = pve_stats.GetValueOrDefault("allStrikes");
+                var allStrikes = stats.GetValueOrDefault("allStrikes");
                 if (allStrikes != null)
                 {
                     StrikeCount = allStrikes.AllTime["activitiesCleared"].Basic.DisplayValue;
                 }
 
-                var allRaids = pve_stats.GetValueOrDefault("raid");
+                var allRaids = stats.GetValueOrDefault("raid");
                 if (allRaids != null)
                 {
                     RaidCount = allRaids.AllTime["activitiesCleared"].Basic.DisplayValue;
                     RaidTime = allRaids.AllTime["totalActivityDurationSeconds"].Basic.DisplayValue;
                 }
 
-                // TODO NIGHTFALLS
+                double nightfallCount = 0;
+                double fastestNightfallRunValue = -1;
+
+                foreach (string nightfallType in new List<string> { "nightfall", "heroicNightfall", "scored_nightfall", "scored_heroicNightfall" })
+                {
+                    var nightfallStats = stats.GetValueOrDefault(nightfallType);
+                    if (nightfallStats != null && nightfallStats.AllTime != null)
+                    {
+                        // Find the fastest nightfall run
+                        var fastestRunStats = nightfallStats.AllTime["fastestCompletionMs"].Basic;
+                        if (fastestNightfallRunValue == -1 || fastestRunStats.Value < fastestNightfallRunValue)
+                        {
+                            fastestNightfallRunValue = fastestRunStats.Value;
+                            FastestNightfall = fastestRunStats.DisplayValue;
+                        }
+                        // Add total runs of this type to count
+                        nightfallCount += nightfallStats.AllTime["activitiesCleared"].Basic.Value;
+                    }
+                }
+                NightFallCount = $"{nightfallCount}";
             }
         }
     }

@@ -85,6 +85,7 @@ namespace Callouts
                 Intents = DiscordIntents.All
             };
 
+            // TODO: the cool way of registering things by their type instead of manually.
             services.AddSingleton(s => new DiscordClient(cfg));
             services.AddSingleton(s => new BungieService(bungiecfg));
             services.AddSingleton<UserService>();
