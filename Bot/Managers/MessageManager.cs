@@ -36,12 +36,13 @@ namespace Callouts
         private readonly CommandContext Ctx;
         private List<DiscordMessage> MessagesToClean = new();
         public ulong UserId;
-        //private bool disposed = false;
+
         public MessageManager(CommandContext ctx)
         {
             Ctx = ctx;
             if (Ctx.Channel.IsPrivate)
             {
+
                 UserId = Ctx.Message.Author.Id;
             }
             else
@@ -74,25 +75,60 @@ namespace Callouts
             }
         }
 
-        public async Task<DiscordMessage> SendEmbed(DiscordEmbed embed)
+        public async Task<DiscordMessage> SendMessage(string content)
         {
-            return await Ctx.Channel.SendMessageAsync(embed);
+            return await SendMessage(new DiscordMessageBuilder() { Content = content });
         }
+        public async Task<DiscordMessage> SendMessage(DiscordEmbed embed)
+        {
+            return await SendMessage(new DiscordMessageBuilder() { Embed = embed });
+        }
+        public async Task<DiscordMessage> SendMessage(string content, DiscordEmbed embed)
+        {
+            return await SendMessage(new DiscordMessageBuilder() { Content = content, Embed = embed });
+        }
+        public async Task<DiscordMessage> SendMessage(DiscordMessageBuilder builder)
+        {
+            return await Ctx.Channel.SendMessageAsync(builder);
+        }
+
+
+        public async Task<DiscordMessage> SendPrivateMessage(string content)
+        {
+            return await SendPrivateMessage(new DiscordMessageBuilder() { Content = content });
+        }
+        public async Task<DiscordMessage> SendPrivateMessage(DiscordEmbed embed)
+        {
+            return await SendPrivateMessage(new DiscordMessageBuilder() { Embed = embed });
+        }
+        public async Task<DiscordMessage> SendPrivateMessage(string content, DiscordEmbed embed)
+        {
+            return await SendPrivateMessage(new DiscordMessageBuilder() { Content = content, Embed = embed });
+        }
+        public async Task<DiscordMessage> SendPrivateMessage(DiscordMessageBuilder builder)
+        {
+            if (Ctx.Channel.IsPrivate)
+            {
+                return await SendMessage(builder);
+            }
+            else
+            {
+                return await Ctx.Member.SendMessageAsync(builder);
+            }
+        }
+
+
+
+
+
+
+        //public async Task<DiscordMessage> SendRegistrationMessage()
+        //{
+        //    //if (Ctx.Guild.GetMemberAsync()
+        //}
 
         // TODO: If needed convert the other methods
         // - get_next_message
         // - get_next_private_message
-        // - send_private_message
-        // - send_private_embed
-        //}
-        //public async Task<DiscordMessage> SendMessage(string messageText)
-        //{
-        //    if (Ctx.Channel.IsPrivate)
-        //    {
-        //        Ctx.Message.Author
-        //        Ctx.Guild.Members.GetValueOrDefault()
-        //        DiscordMessage message = 
-        //    }
-        //}
     }
 }

@@ -27,6 +27,7 @@ using System.Linq;
 using DSharpPlus.Entities;
 using BungieSharper.Entities;
 using System.ComponentModel.DataAnnotations;
+using Callouts.Attributes;
 
 
 // TODO: Other stats like
@@ -37,7 +38,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Callouts
 {
-    [Group("stats"), Description("Display various Destiny 2 stats")]
+    [Group("stats"), Description("Display various Destiny 2 stats"), RequireBungieLink()]
     public class Stats : BaseCommandModule
     {
         private readonly DiscordClient client;
@@ -101,7 +102,7 @@ namespace Callouts
             };
             var historicalStats = await bungieService.GetHistoricalStats(discordUser.PrimaryPlatformId.Value, discordUser.Platform, activityMode);
             BungieService.PvEStats pveStats = new BungieService.PvEStats(historicalStats);
-            await messageManager.SendEmbed(GeneratePveStatsEmbed(pveStats, discordUser));
+            await messageManager.SendMessage(GeneratePveStatsEmbed(pveStats, discordUser));
         }
 
 
@@ -113,7 +114,7 @@ namespace Callouts
             var activityMode = new List<DestinyActivityModeType> { DestinyActivityModeType.AllPvP };
             var historicalStats = await bungieService.GetHistoricalStats(discordUser.PrimaryPlatformId.Value, discordUser.Platform, activityMode);           
             BungieService.PvPStats pvpStats = new BungieService.PvPStats(historicalStats["allPvP"].AllTime);
-            await messageManager.SendEmbed(GeneratePvPStatsEmbed(pvpStats, discordUser, "Crucible Stats"));
+            await messageManager.SendMessage(GeneratePvPStatsEmbed(pvpStats, discordUser, "Crucible Stats"));
         }
 
         [Command("trials"), Description("Display Trials stats across all characters on your account")]
@@ -124,7 +125,7 @@ namespace Callouts
             var activityMode = new List<DestinyActivityModeType> { DestinyActivityModeType.TrialsOfOsiris };
             var historicalStats = await bungieService.GetHistoricalStats(discordUser.PrimaryPlatformId.Value, discordUser.Platform, activityMode);
             BungieService.PvPStats pvpStats = new BungieService.PvPStats(historicalStats["trials_of_osiris"].AllTime);
-            await messageManager.SendEmbed(GeneratePvPStatsEmbed(pvpStats, discordUser, "Trials of Osiris Stats"));
+            await messageManager.SendMessage(GeneratePvPStatsEmbed(pvpStats, discordUser, "Trials of Osiris Stats"));
         }
 
         [Command("ib"), Description("Display Iron Banner stats across all characters on your account")]
@@ -135,7 +136,7 @@ namespace Callouts
             var activityMode = new List<DestinyActivityModeType> { DestinyActivityModeType.IronBanner };
             var historicalStats = await bungieService.GetHistoricalStats(discordUser.PrimaryPlatformId.Value, discordUser.Platform, activityMode);
             BungieService.PvPStats pvpStats = new BungieService.PvPStats(historicalStats["ironBanner"].AllTime);
-            await messageManager.SendEmbed(GeneratePvPStatsEmbed(pvpStats, discordUser, "Iron Banner Stats"));
+            await messageManager.SendMessage(GeneratePvPStatsEmbed(pvpStats, discordUser, "Iron Banner Stats"));
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
