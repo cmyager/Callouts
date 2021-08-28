@@ -90,7 +90,7 @@ namespace Callouts.Pages
                 {
                     primaryMembershipType = bungieProfile.DestinyMemberships.First(p => p.MembershipId == bungieProfile.PrimaryMembershipId).MembershipType;
                 }
-                
+
                 List<DestinyComponentType> Components = new() { DestinyComponentType.Characters };
 
                 PrimaryCharacterProfile = await bungieService.GetProfile(primaryMembershipId, primaryMembershipType, Components);
@@ -98,7 +98,7 @@ namespace Callouts.Pages
                 {
                     CharacterErrorAlert.Show();
                 }
-                DiscordUserInfo = await userManager.SyncBungieProfile(DiscordUserInfo.DiscordUserId, bungieProfile, PrimaryCharacterProfile);
+                DiscordUserInfo = await userManager.SyncBungieProfile(DiscordUserInfo.UserId, bungieProfile, PrimaryCharacterProfile);
             }
 
 
@@ -106,7 +106,7 @@ namespace Callouts.Pages
 
         public async Task ClearBungieProfile()
         {
-            DiscordUserInfo = await userManager.ClearBungieProfile(DiscordUserInfo.DiscordUserId);
+            DiscordUserInfo = await userManager.ClearBungieProfile(DiscordUserInfo.UserId);
             bungieProfile = null;
             PrimaryCharacterProfile = null;
 

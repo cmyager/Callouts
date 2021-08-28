@@ -67,11 +67,11 @@ namespace Callouts
         {
             using var context = ContextFactory.CreateDbContext();
             var user = await context.Users.AsQueryable()
-                .FirstOrDefaultAsync(p => p.DiscordUserId == UserId,
+                .FirstOrDefaultAsync(p => p.UserId == UserId,
                                      cancellationToken: CancellationToken.None);
             if (user == null)
             {
-                user = new User() { DiscordUserId = UserId };
+                user = new User() { UserId = UserId };
                 context.Add(user);
                 await context.SaveChangesAsync();
             }
@@ -95,7 +95,7 @@ namespace Callouts
             // TODO: make this work for all the platforms////////
             using var context = ContextFactory.CreateDbContext();
             return await context.Users.AsQueryable()
-                .FirstOrDefaultAsync(p => p.DiscordUserId == UserId,
+                .FirstOrDefaultAsync(p => p.UserId == UserId,
                                      cancellationToken: CancellationToken.None);
         }
 
