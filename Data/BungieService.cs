@@ -1,4 +1,4 @@
-﻿using BungieSharper.Client;
+using BungieSharper.Client;
 using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny;
 using BungieSharper.Entities.Destiny.Config;

@@ -1,4 +1,4 @@
-﻿using BungieSharper.Entities.Destiny.Responses;
+using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;
 using Callouts.Data;
 using Callouts.DataContext;
@@ -72,9 +72,9 @@ namespace Callouts.Pages
             Guild guild = await guildManager.GetGuild(guildID);
             DataContext.Event newEvent = new DataContext.Event()
             {
-                Title = "Test",
+                Title = "Test 1 max",
                 Description = "TEST",
-                MaxMembers = 6,
+                MaxMembers = 1,
                 //Guild = guild,
                 GuildId = guildID,
                 //Guild = guild,

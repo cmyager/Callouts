@@ -114,11 +114,13 @@ namespace Callouts.DataContext
         private List<UserEvent> GetStandby()
         {
             List<UserEvent> standby = new();
-            List<UserEvent> accepted = this.Accepted;
+            List<UserEvent> accepted = this.UserEvents
+                .Where(p => p.Attending == UserEventAttending.ACCEPTED || p.Attending == UserEventAttending.CONFIRMED)
+                .OrderBy(p => p.LastUpdated).ToList();
 
             if (this.MaxMembers != null && accepted.Count > this.MaxMembers)
             {
-                standby = accepted.GetRange(this.MaxMembers.Value + 1, accepted.Count);
+                standby = accepted.GetRange(this.MaxMembers.Value, accepted.Count - this.MaxMembers.Value);
             }
             return standby;
         }

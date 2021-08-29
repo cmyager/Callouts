@@ -1,4 +1,4 @@
-﻿using Callouts.DataContext;
+using Callouts.DataContext;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;

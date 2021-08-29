@@ -1,4 +1,4 @@
-﻿using BungieSharper.Entities;
+using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny;
 using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;

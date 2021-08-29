@@ -37,9 +37,9 @@ namespace Callouts
             var folder = Environment.SpecialFolder.LocalApplicationData;
             var path = Environment.GetFolderPath(folder);
             var dbPath = $"{path}{Path.DirectorySeparatorChar}callouts.db";
-            
+
             // TODO: Remove this later on once it is closer to done
-            dbPath = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}callouts.db"; 
+            dbPath = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}callouts.db";
             Console.WriteLine($"DbPath is {dbPath}");
 
             services.AddDbContextFactory<CalloutsContext>(options => options.UseSqlite($"Data Source={dbPath}"));

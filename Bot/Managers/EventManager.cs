@@ -143,7 +143,7 @@ namespace Callouts
             else
             {
                 userEvent.Attending = attending;
-                if (attending != UserEventAttending.ACCEPTED || attending != UserEventAttending.CONFIRMED)
+                if (userEvent.Attending != UserEventAttending.ACCEPTED && userEvent.Attending != UserEventAttending.CONFIRMED)
                 {
                     userEvent.LastUpdated = DateTime.UtcNow;
                 }
@@ -229,7 +229,7 @@ namespace Callouts
 
             foreach (var user in e.Accepted)
             {
-                string discordUserName = (await guild.GetMemberAsync(e.UserId)).DisplayName;
+                string discordUserName = (await guild.GetMemberAsync(user.UserId)).DisplayName;
                 if (user.Attending == UserEventAttending.CONFIRMED)
                 {
                     discordUserName = $"**{discordUserName}**";
@@ -239,7 +239,7 @@ namespace Callouts
 
             foreach (var user in e.Declined)
             {
-                string discordUserName = (await guild.GetMemberAsync(e.UserId)).DisplayName;
+                string discordUserName = (await guild.GetMemberAsync(user.UserId)).DisplayName;
                 if (user.Attending == UserEventAttending.REJECTED)
                 {
                     discordUserName = $"~~{discordUserName}~~";
@@ -249,13 +249,13 @@ namespace Callouts
 
             foreach (var user in e.Maybe)
             {
-                string discordUserName = (await guild.GetMemberAsync(e.UserId)).DisplayName;
+                string discordUserName = (await guild.GetMemberAsync(user.UserId)).DisplayName;
                 maybeValue += $"{discordUserName}\n";
             }
 
             foreach (var user in e.Standby)
             {
-                string discordUserName = (await guild.GetMemberAsync(e.UserId)).DisplayName;
+                string discordUserName = (await guild.GetMemberAsync(user.UserId)).DisplayName;
                 if (user.Attending == UserEventAttending.CONFIRMED)
                 {
                     discordUserName = $"**{discordUserName}**";
@@ -382,7 +382,5 @@ namespace Callouts
             }
             return eventInfo;
         }
-    }
-}
     }
 }

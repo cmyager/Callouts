@@ -23,6 +23,7 @@ namespace Callouts.Data
         {
             SchedulingService @this = _ as SchedulingService ?? throw new InvalidOperationException();
 
+
             @this.LastReloadTime = DateTimeOffset.Now;
 
 
