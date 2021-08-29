@@ -83,7 +83,7 @@ namespace Callouts
             //Use!help[command] for more info on a command
 
         }
-
+        //TODO: Could make these all 1 function with args
         [Command("pve"), Description("Display PvE stats across all characters on your account")]
         public async Task StatsPve(CommandContext ctx)
         {

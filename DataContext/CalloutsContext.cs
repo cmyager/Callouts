@@ -4,12 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data;
-using System;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Metadata;
-using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+
 // TODO: Clean up
 // TODO: More complex replationships that do on delete cascade
 // TODO: all of the fields that should be with the foreign IDs are null. Dunno why. EF is hard
@@ -30,16 +27,22 @@ namespace Callouts.DataContext
 
             modelBuilder.Entity<Guild>(entity =>
             {
-                entity.Property(e => e.GuildId).ValueGeneratedNever();
                 entity.HasKey(e => new { e.GuildId })
                     .HasName("Primary");
+                entity.Property(e => e.GuildId)
+                    .ValueGeneratedNever();
+
                 //entity.Property(e => e.ClearSpam).HasDefaultValueSql("1");
                 //entity.Property(e => e.Prefix).HasDefaultValueSql("!");
             });
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.Property(e => e.UserId).ValueGeneratedNever();
+                entity.HasKey(e => new { e.UserId })
+                    .HasName("Primary");
+                entity.Property(e => e.UserId)
+                    .ValueGeneratedNever();
+
             });
 
 
@@ -60,25 +63,25 @@ namespace Callouts.DataContext
 
             modelBuilder.Entity<UserEvent>(entity =>
             {
-                    entity.HasKey(e => new { e.UserEventId, e.UserId, e.GuildId, e.EventId })
+                    entity.HasKey(e => new { e.UserEventId })
                         .HasName("PRIMARY");
                 //    entity.HasKey(e => new { e.UserEventId, e.UserId, e.GuildId, e.Title })
                 //        .HasName("PRIMARY");
 
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserEvents)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                //entity.HasOne(d => d.User)
+                //    .WithMany(p => p.UserEvents)
+                //    .HasForeignKey(d => d.UserId)
+                //    .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(d => d.Event)
                     .WithMany(p => p.UserEvents)
                     .HasForeignKey(d => new { d.EventId })
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(d => d.Guild)
-                    .WithMany(d => d.UserEvents)
-                    .HasForeignKey(d => d.GuildId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                //entity.HasOne(d => d.Guild)
+                //    .WithMany(d => d.UserEvents)
+                //    .HasForeignKey(d => d.GuildId)
+                //    .OnDelete(DeleteBehavior.Cascade);
 
 
 

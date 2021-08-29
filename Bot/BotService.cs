@@ -31,7 +31,6 @@ namespace Callouts
         private readonly ChannelManager channelManager;
         private readonly BungieService bungieService;
         private readonly EventManager eventManager;
-        private readonly UserEventManager userEventManager;
         private readonly IConfiguration config;
         private readonly ILogger<BotService> logger;
         private readonly IDbContextFactory<CalloutsContext> ContextFactory;
@@ -44,7 +43,6 @@ namespace Callouts
                           ChannelManager channelManager,
                           BungieService bungieService,
                           EventManager eventManager,
-                          UserEventManager userEventManager,
                           IConfiguration config,
                           ILogger<BotService> logger,
                           IDbContextFactory<CalloutsContext> ContextFactory,
@@ -57,7 +55,6 @@ namespace Callouts
             this.channelManager = channelManager;
             this.bungieService = bungieService;
             this.eventManager = eventManager;
-            this.userEventManager = userEventManager;
             this.config = config;
             this.logger = logger;
             this.ContextFactory = ContextFactory;
@@ -88,7 +85,6 @@ namespace Callouts
             services.AddSingleton<ChannelManager>(channelManager);
             services.AddSingleton<BungieService>(bungieService);
             services.AddSingleton<EventManager>(eventManager);
-            services.AddSingleton<UserEventManager>(userEventManager);
 
             // Set up commands
             Commands = Client.UseCommandsNext(new CommandsNextConfiguration

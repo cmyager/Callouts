@@ -24,8 +24,12 @@ namespace Callouts
         public async Task<Guild> GetGuild(ulong guildId)
         {
             using var context = ContextFactory.CreateDbContext();
-            var guildConfig = await context.Guilds.AsQueryable()
-                .FirstOrDefaultAsync(p => p.GuildId == guildId,
+
+            IQueryable<Guild> guildQuery = context.Guilds.AsQueryable();
+            guildQuery = guildQuery.Include(p => p.Events);
+            guildQuery = guildQuery.Include(p => p.UserEvents);
+
+            Guild guildConfig = await guildQuery.FirstOrDefaultAsync(p => p.GuildId == guildId,
                                      cancellationToken: CancellationToken.None);
 
             if (guildConfig == null)
@@ -36,6 +40,7 @@ namespace Callouts
             }
             return guildConfig;
         }
+
         public async Task<Guild> RemoveGuild(ulong guildId)
         {
             using var context = ContextFactory.CreateDbContext();

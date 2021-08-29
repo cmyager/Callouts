@@ -16,7 +16,9 @@ namespace Callouts.DataContext
         UNKNOWN = 0,
         DECLINED = 1,
         MAYBE = 2,
-        ACCEPTED = 3
+        ACCEPTED = 3,
+        CONFIRMED = 4,
+        REJECTED = 5
     }
 
     public partial class UserEvent
@@ -25,19 +27,19 @@ namespace Callouts.DataContext
         [Key]
         [Column("user_event_id")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int UserEventId { get; set; }
+        public int? UserEventId { get; set; }
         //public int? UserEventId { get; set; }
         //TODO
 
-        [Key]
+        //[Key]
         [Column("user_id")]
         public ulong UserId { get; set; }
 
-        [Key]
+        //[Key]
         [Column("guild_id")]
         public ulong GuildId { get; set; }
 
-        [Key]
+        //[Key]
         [Column("event_id")]
         public int EventId { get; set; }
 
@@ -50,8 +52,8 @@ namespace Callouts.DataContext
         [Column("last_updated", TypeName = "datetime")]
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
-        [Column("confirmed")]
-        public int Confirmed { get; set; } = 0;
+        // [Column("confirmed")]
+        // public int Confirmed { get; set; } = 0;
 
         [Column("attempts")]
         public int Attempts { get; set; } = 1;

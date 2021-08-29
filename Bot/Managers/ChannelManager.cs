@@ -9,38 +9,48 @@ namespace Callouts
 {
     public class ChannelManager
     {
-        private readonly DiscordClient Client;
+        //private readonly DiscordClient Client;
 
         private readonly List<string> RequiredChannels = new() { "bot-commands", "upcoming-events", "raid-reports" };
 
+        /// <summary>
+        /// ChannelManager
+        /// </summary>
+        /// <param name="client"></param>
         public ChannelManager(DiscordClient client)
         {
-            Client = client;
-            Client.Ready += VerifyRequiredChannelsOnStartup;
-            Client.GuildCreated += CreateRequiredChannelsOnJoin;
+            //Client = client;
+            client.GuildAvailable += CreateRequiredChannelsOnJoin;
+            client.GuildCreated += CreateRequiredChannelsOnJoin;
         }
 
+        /// <summary>
+        /// GetChannel
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="channelName"></param>
+        /// <returns></returns>
         public async Task<DiscordChannel> GetChannel(DiscordGuild guild, string channelName)
         {
             var channel = (await guild.GetChannelsAsync()).FirstOrDefault(p => p.Name == channelName);
             if (channel == null)
             {
-                channel = await guild.CreateChannelAsync(channelName, ChannelType.Text);
+                List<DiscordOverwriteBuilder> overwriteList = new()
+                {
+                    new DiscordOverwriteBuilder(guild.EveryoneRole) { Allowed = Permissions.SendMessages | Permissions.AddReactions },
+                    new DiscordOverwriteBuilder(guild.CurrentMember) { Allowed = Permissions.All }
+                };
+                channel = await guild.CreateTextChannelAsync(channelName, overwrites: overwriteList);
             }
             return channel;
         }
 
-        private async Task VerifyRequiredChannelsOnStartup(DiscordClient sender, ReadyEventArgs e)
-        {
-            foreach (var guild in sender.Guilds)
-            {
-                foreach (string channelName in RequiredChannels)
-                {
-                    await GetChannel(guild.Value, channelName);
-                }
-            }
-        }
-
+        /// <summary>
+        /// CreateRequiredChannelsOnJoin
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
         private async Task CreateRequiredChannelsOnJoin(DiscordClient sender, GuildCreateEventArgs e)
         {
             foreach (string channelName in RequiredChannels)
@@ -48,12 +58,8 @@ namespace Callouts
                 await GetChannel(e.Guild, channelName);
             }
         }
-
         // TODO
-        //  - Support overwrites and other settings in the channel creation. Here is itin python
-        //overwrites = {guild.default_role: discord.PermissionOverwrite(send_messages=False, add_reactions=True),
-        //              guild.me: discord.PermissionOverwrite(send_messages=True, add_reactions=True)}
-    //  - Clean channel function
-    //  - Clean channel periodic task
-}
+        //  - Clean channel function
+        //  - Clean channel periodic task
+    }
 }

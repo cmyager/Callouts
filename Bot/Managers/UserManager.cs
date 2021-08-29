@@ -66,8 +66,10 @@ namespace Callouts
         public async Task<User> GetUserByUserId(ulong UserId)
         {
             using var context = ContextFactory.CreateDbContext();
-            var user = await context.Users.AsQueryable()
-                .FirstOrDefaultAsync(p => p.UserId == UserId,
+            IQueryable<User> UserQuery = context.Users.AsQueryable();
+            UserQuery = UserQuery.Include(p => p.Events);
+            UserQuery = UserQuery.Include(p => p.UserEvents);
+            var user = await UserQuery.FirstOrDefaultAsync(p => p.UserId == UserId,
                                      cancellationToken: CancellationToken.None);
             if (user == null)
             {
@@ -93,6 +95,7 @@ namespace Callouts
         public async Task<User> GetUserByPlatformId(BungieMembershipType platform, ulong UserId)
         {
             // TODO: make this work for all the platforms////////
+            // TODO: With the change to only storing the default playform this is simpler now
             using var context = ContextFactory.CreateDbContext();
             return await context.Users.AsQueryable()
                 .FirstOrDefaultAsync(p => p.UserId == UserId,
@@ -124,7 +127,6 @@ namespace Callouts
             discordUser.BungieId = bungieMembership.BungieNetUser.MembershipId;
             discordUser.BungieName = bungieMembership.BungieNetUser.DisplayName;
 
-            // Could use a case statement here?
             foreach (var membership in bungieMembership.DestinyMemberships)
             {
                 if (membership.MembershipId == bungieMembership.PrimaryMembershipId)

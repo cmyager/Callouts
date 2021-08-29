@@ -10,16 +10,10 @@ using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;
 using Callouts.DataContext;
-using Microsoft.EntityFrameworkCore;
-using System.Threading;
-using System.Threading.Tasks;
-using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.EventArgs;
-using System.Linq;
 using DSharpPlus.Entities;
-using System.Collections.Generic;
 
 namespace Callouts.Data
 {

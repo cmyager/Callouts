@@ -95,7 +95,6 @@ namespace Callouts
             services.AddSingleton<UserManager>();
             services.AddSingleton<ChannelManager>();
             services.AddSingleton<EventManager>();
-            services.AddSingleton<UserEventManager>();
             // TODO: Add more singletons here
 
             services.AddHttpContextAccessor();
