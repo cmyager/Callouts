@@ -1,4 +1,4 @@
-using BungieSharper.Entities;
+﻿using BungieSharper.Entities;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -25,13 +25,10 @@ namespace Callouts.DataContext
         [Column("event_id")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int EventId { get; set; }
-        //public int? EventId { get; private set; }
-        //TODO
 
         [Column("guild_id")]
         public ulong GuildId { get; set; }
 
-        // TODO: Should this be null?
         [Column("user_id")]
         public ulong UserId { get; set; }
 
@@ -43,22 +40,13 @@ namespace Callouts.DataContext
         public string Description { get; set; }
 
         // TODO: restrict this to positive? or null
+        // incase you want to allow creating an event no limit
         [Column("max_members")]
         public int? MaxMembers { get; set; }
 
         [Required]
         [Column("start_time", TypeName = "datetime")]
         public DateTime StartTime { get; set; } = DateTime.UtcNow;
-
-
-        // TODO: Put this in place later
-        // [Column("utctime", TypeName = "datetime")]
-        // public DateTime Utctime { get; set; }
-
-        // [Column("timezone")]
-        // [StringLength(20)]
-        // public string Timezone { get; set; }
-
 
         [ForeignKey(nameof(GuildId))]
         [InverseProperty("Events")]
@@ -72,11 +60,16 @@ namespace Callouts.DataContext
         public virtual ICollection<UserEvent> UserEvents { get; set; }
 
         [NotMapped]
+        public DateTime CentralTime => TimeZoneInfo.ConvertTime(this.StartTime, TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
+
+        [NotMapped]
         public List<UserEvent> Accepted { get { return GetAccepted(); } }
 
         [NotMapped]
         public List<UserEvent> Standby { get { return GetStandby(); } }
 
+        // TODO Consider: These could be removed and this could just be done by sorting by last update
+        // It would simplify the event creation a bit I imagine, but this makes it readable
         [NotMapped]
         public List<UserEvent> Declined
             => this.UserEvents

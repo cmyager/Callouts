@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,36 +17,41 @@ using DSharpPlus.Entities;
 
 namespace Callouts.Data
 {
+    /// <summary>
+    /// SchedulingService
+    /// </summary>
     public sealed class SchedulingService : IDisposable
     {
-        private static void LoadCallback(object? _)
-        {
-            SchedulingService @this = _ as SchedulingService ?? throw new InvalidOperationException();
-
-
-            @this.LastReloadTime = DateTimeOffset.Now;
-
-
-        }
-
-
-        public bool IsDisabled => false;
+        public IServiceProvider serviceProvider;
         public TimeSpan ReloadSpan { get; }
         public DateTimeOffset LastReloadTime { get; private set; }
 
         private readonly DiscordClient client;
         private readonly IDbContextFactory<CalloutsContext> ContextFactory;
         private readonly AsyncExecutionService async;
-        private readonly ConcurrentDictionary<int, ScheduledTaskExecutor> tasks;
+        private readonly ConcurrentDictionary<ulong, ScheduledTaskExecutor> tasks;
         private readonly ConcurrentDictionary<int, ScheduledTaskExecutor> reminders;
         private Timer? loadTimer;
 
-        public SchedulingService(IDbContextFactory<CalloutsContext> contextFactory, DiscordClient client, AsyncExecutionService async, bool start = true)
+        /// <summary>
+        /// SchedulingService
+        /// </summary>
+        /// <param name="contextFactory"></param>
+        /// <param name="client"></param>
+        /// <param name="async"></param>
+        /// <param name="eventManager"></param>
+        /// <param name="start"></param>
+        public SchedulingService(IDbContextFactory<CalloutsContext> contextFactory,
+                                 DiscordClient client,
+                                 AsyncExecutionService async,
+                                 IServiceProvider serviceProvider,
+                                 bool start = true)
         {
             this.client = client;
             this.ContextFactory = contextFactory;
             this.async = async;
-            this.tasks = new ConcurrentDictionary<int, ScheduledTaskExecutor>();
+            this.serviceProvider = serviceProvider;
+            this.tasks = new ConcurrentDictionary<ulong, ScheduledTaskExecutor>();
             this.reminders = new ConcurrentDictionary<int, ScheduledTaskExecutor>();
             this.LastReloadTime = DateTimeOffset.Now;
             this.ReloadSpan = TimeSpan.FromMinutes(5);
@@ -56,6 +61,60 @@ namespace Callouts.Data
             }
         }
 
+        /// <summary>
+        /// LoadCallback
+        /// </summary>
+        /// <param name="_"></param>
+        private async void LoadCallback(object? _)
+        {
+            SchedulingService @this = _ as SchedulingService ?? throw new InvalidOperationException();
+            await RegisterReminders();
+            @this.LastReloadTime = DateTimeOffset.Now;
+        }
+
+        /// <summary>
+        /// RegisterReminders
+        /// </summary>
+        /// <returns></returns>
+        public async Task RegisterReminders()
+        {
+            using var context = ContextFactory.CreateDbContext();
+
+            var UpcomingEvents = await context.Events.AsQueryable()
+                //.Include(p => p.Guild)
+                .Where(t => t.StartTime <= DateTime.UtcNow.AddMinutes(70))
+                .ToListAsync();
+
+            // If there is a reminder task and the event is old remove it
+            foreach ((int eventId, ScheduledTaskExecutor texec) in this.reminders)
+            {
+                // TODO: Test this. It might not be needed if the on complete task thing works
+                if ((texec.Job as Reminder).EventTime < DateTime.UtcNow)
+                {
+                    await UnscheduleTask(reminders[eventId].Job, true);
+                }
+            }
+            // TODO Consider: Remove reminders if all people are confirmed?
+            // TODO: Remove reminders for events that were deleted?
+
+            foreach (Event upcomingEvent in UpcomingEvents)
+            {
+                if (!reminders.ContainsKey(upcomingEvent.EventId) && (DateTime.UtcNow - upcomingEvent.StartTime).TotalSeconds < 0)
+                {
+                    Reminder eventReminder = new()
+                    {
+                        Id = upcomingEvent.EventId,
+                        EventTime = upcomingEvent.StartTime,
+                        ExecutionTime = upcomingEvent.StartTime.AddMinutes(-60)
+                    };
+                    await this.RegisterTask(eventReminder);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dispose
+        /// </summary>
         public void Dispose()
         {
             this.loadTimer?.Dispose();
@@ -65,21 +124,26 @@ namespace Callouts.Data
                 texec.Dispose();
         }
 
+        /// <summary>
+        /// Start
+        /// </summary>
         public void Start()
         {
-            this.loadTimer = new Timer(LoadCallback, this, TimeSpan.FromSeconds(10), this.ReloadSpan);
+            this.loadTimer = new Timer(LoadCallback, this, TimeSpan.FromSeconds(1), this.ReloadSpan);
         }
 
-
-        public async Task ScheduleAsync(ScheduledTask task)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="task"></param>
+        public void ScheduleTask(ScheduledTask task)
         {
             ScheduledTaskExecutor? texec = null;
             try
             {
-                if (DateTimeOffset.Now + task.TimeUntilExecution <= this.LastReloadTime + this.ReloadSpan)
-                    texec = this.CreateTaskExecutor(task);
+                texec = this.CreateTaskExecutor(task);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 texec?.Dispose();
                 //Log.Warning(e, "Scheduling tasks failed");
@@ -87,74 +151,109 @@ namespace Callouts.Data
             }
         }
 
-        public async Task UnscheduleAsync(ScheduledTask task, bool force = false)
+        /// <summary>
+        /// UnscheduleTask
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="force"></param>
+        /// <returns></returns>
+        //TODO: Is force needed?
+        public Task UnscheduleTask(ScheduledTask task, bool force = false)
         {
+            switch (task)
+            {
+                case FetchReport _:
+                    if (this.tasks.TryRemove((task as FetchReport).DiscordUserId, out ScheduledTaskExecutor? taskExec))
+                    {
+                        taskExec.Dispose();
+                    }
+                    else
+                    {
+                        //Log.Warning("Failed to remove guild task from task collection: {GuildTaskId}", task.Id);
+                    }
+                    break;
+                case Reminder rem:
+                    //if (!force && rem.IsRepeating && rem.RepeatInterval < this.ReloadSpan)
+                    //{
+                    //    break;
+                    //}
+                    if (this.reminders.TryRemove(task.Id, out ScheduledTaskExecutor? remindExec))
+                    {
+                        remindExec.Dispose();
+                    }
+                    else
+                    {
+                        //Log.Warning("Failed to remove reminder from task collection: {ReminderId}", task.Id);
+                    }
+                    break;
+                default:
+                    //Log.Warning("Unknown scheduled task type: {ScheduledTaskType}", task.GetType());
+                    break;
+            }
+            return Task.CompletedTask;
         }
 
-        public async Task UnscheduleRemindersForUserAsync(ulong uid)
-        {
-        }
-
-        public async Task UnscheduleRemindersForChannelAsync(ulong cid)
-        {
-        }
-
-        public async Task<IReadOnlyList<Reminder>> GetRemindTasksForUserAsync(ulong uid)
-        {
-            List<Reminder> reminders = new List<Reminder>(); // I added new
-            return reminders.AsReadOnly();
-        }
-
-        public async Task<IReadOnlyList<Reminder>> GetRemindTasksForChannelAsync(ulong cid)
-        {
-            List<Reminder> reminders = new List<Reminder>(); // I added new
-            return reminders.AsReadOnly();
-        }
-
-
-        private async Task<bool> RegisterDbTaskAsync(ScheduledTask task)
+        /// <summary>
+        /// RegisterTask
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        private async Task<ScheduledTaskExecutor> RegisterTask(ScheduledTask task)
         {
             ScheduledTaskExecutor texec = this.CreateTaskExecutor(task);
             if (task.IsExecutionTimeReached)
             {
                 await texec.HandleMissedExecutionAsync();
-                await this.UnscheduleAsync(task);
-                return false;
+                await this.UnscheduleTask(task);
+                texec = null;
             }
-            return true;
-        }
-
-        private ScheduledTaskExecutor CreateTaskExecutor(ScheduledTask task)
-        {
-            var texec = new ScheduledTaskExecutor(this.client, this.async, task);
-            texec.OnTaskExecuted += this.UnscheduleAsync;
-            if (this.RegisterExecutor(texec) && !task.IsExecutionTimeReached)
-                texec.ScheduleExecution();
             return texec;
         }
 
+        /// <summary>
+        /// ScheduledTaskExecutor
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        private ScheduledTaskExecutor CreateTaskExecutor(ScheduledTask task)
+        {
+            var texec = new ScheduledTaskExecutor(this.client, this.async, task, serviceProvider);
+            texec.OnTaskExecuted += this.UnscheduleTask;
+            if (this.RegisterExecutor(texec) && !task.IsExecutionTimeReached)
+            {
+                texec.ScheduleExecution();
+            }
+            return texec;
+        }
+
+        /// <summary>
+        /// RegisterExecutor
+        /// </summary>
+        /// <param name="texec"></param>
+        /// <returns></returns>
         private bool RegisterExecutor(ScheduledTaskExecutor texec)
         {
+            bool retval = true;
             if (texec.Job is Reminder rem)
             {
                 //Log.Debug("Attempting to register reminder {ReminderId} in channel {Channel} @ {ExecutionTime}", rem.Id, rem.ChannelId, rem.ExecutionTime);
                 if (!this.reminders.TryAdd(texec.Id, texec))
                 {
                     //if (!rem.IsRepeating)
-                        //Log.Warning("Reminder {Id} already exists in the collection for user {UserId}", texec.Id, rem.UserId);
-                    return false;
+                    //Log.Warning("Reminder {Id} already exists in the collection for user {UserId}", texec.Id, rem.UserId);
+                    retval = false;
                 }
             }
             else
             {
                 //Log.Debug("Attempting to register guild task {ReminderId} @ {ExecutionTime}", texec.Id, texec.Job.ExecutionTime);
-                if (!this.tasks.TryAdd(texec.Id, texec))
+                if (!this.tasks.TryAdd((texec.Job as FetchReport).DiscordUserId, texec))
                 {
                     //Log.Warning("Guild task {Id} already exists in the collection for user {UserId}", texec.Id);
-                    return false;
+                    retval = false;
                 }
             }
-            return true;
+            return retval;
         }
     }
 }

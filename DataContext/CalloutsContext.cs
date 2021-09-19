@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
@@ -6,11 +6,9 @@ using System.Linq;
 using System.Data;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 // TODO: Clean up
-// TODO: More complex replationships that do on delete cascade
-// TODO: all of the fields that should be with the foreign IDs are null. Dunno why. EF is hard
-
 #nullable disable
 
 namespace Callouts.DataContext
@@ -31,9 +29,6 @@ namespace Callouts.DataContext
                     .HasName("Primary");
                 entity.Property(e => e.GuildId)
                     .ValueGeneratedNever();
-
-                //entity.Property(e => e.ClearSpam).HasDefaultValueSql("1");
-                //entity.Property(e => e.Prefix).HasDefaultValueSql("!");
             });
 
             modelBuilder.Entity<User>(entity =>
@@ -44,7 +39,6 @@ namespace Callouts.DataContext
                     .ValueGeneratedNever();
 
             });
-
 
             modelBuilder.Entity<Event>(entity =>
             {
@@ -65,49 +59,13 @@ namespace Callouts.DataContext
             {
                     entity.HasKey(e => new { e.UserEventId })
                         .HasName("PRIMARY");
-                //    entity.HasKey(e => new { e.UserEventId, e.UserId, e.GuildId, e.Title })
-                //        .HasName("PRIMARY");
-
-                //entity.HasOne(d => d.User)
-                //    .WithMany(p => p.UserEvents)
-                //    .HasForeignKey(d => d.UserId)
-                //    .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(d => d.Event)
                     .WithMany(p => p.UserEvents)
                     .HasForeignKey(d => new { d.EventId })
                     .OnDelete(DeleteBehavior.Cascade);
-
-                //entity.HasOne(d => d.Guild)
-                //    .WithMany(d => d.UserEvents)
-                //    .HasForeignKey(d => d.GuildId)
-                //    .OnDelete(DeleteBehavior.Cascade);
-
-
-
-
-
-
-                //entity.Property(e => e.Attempts).HasDefaultValueSql("1");
-                //entity.Property(e => e.Confirmed).HasDefaultValueSql("0");
-                //entity.Property(e => e.LastUpdated).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
-            //////////////////////////////////////////////////
-
-
-            //modelBuilder.Entity<UserEvent>(entity =>
-            //{
-            //    entity.HasKey(e => new { e.UserEventId, e.UserId, e.GuildId, e.Title })
-            //        .HasName("PRIMARY");
-
-            //    entity.HasOne(d => d.User)
-            //        .WithMany(p => p.UserEvents)
-            //        .HasForeignKey(d => d.UserId);
-
-            //    entity.HasOne(d => d.Event)
-            //        .WithMany(p => p.UserEvents)
-            //        .HasForeignKey(d => new { d.EventId, d.GuildId, d.Title });
-            //});
+            modelBuilder.ApplyUtcDateTimeConverter();
 
             OnModelCreatingPartial(modelBuilder);
         }
@@ -119,5 +77,43 @@ namespace Callouts.DataContext
         public virtual DbSet<Guild> Guilds { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserEvent> UserEvents { get; set; }
+    }
+
+    //TODO Describe
+    // https://github.com/dotnet/efcore/issues/4711#issuecomment-589842988
+    public static class UtcDateAnnotation
+    {
+        private const string IsUtcAnnotation = "IsUtc";
+        private static readonly ValueConverter<DateTime, DateTime> UtcConverter =
+            new ValueConverter<DateTime, DateTime>(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+        public static PropertyBuilder<TProperty> IsUtc<TProperty>(this PropertyBuilder<TProperty> builder, bool isUtc = true) =>
+            builder.HasAnnotation(IsUtcAnnotation, isUtc);
+
+        public static bool IsUtc(this IMutableProperty property) =>
+            ((bool?)property.FindAnnotation(IsUtcAnnotation)?.Value) ?? true;
+
+        /// <summary>
+        /// Make sure this is called after configuring all your entities.
+        /// </summary>
+        public static void ApplyUtcDateTimeConverter(this ModelBuilder builder)
+        {
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (!property.IsUtc())
+                    {
+                        continue;
+                    }
+
+                    if (property.ClrType == typeof(DateTime) ||
+                        property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(UtcConverter);
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-using Callouts.DataContext;
+﻿using Callouts.DataContext;
 using Callouts.Data;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -27,7 +27,51 @@ using System.Linq;
 using DSharpPlus.Entities;
 using BungieSharper.Entities;
 using System.ComponentModel.DataAnnotations;
+using Callouts.Attributes;
 
-namespace Callouts.Bot.Modules
+namespace Callouts
 {
+    [Description("Posts your most recent raid report."), RequireBungieLink()]
+    public class Report : BaseCommandModule
+    {
+        private readonly DiscordClient client;
+        private readonly GuildManager guildManager;
+        private readonly ChannelManager channelManager;
+        private readonly ReportManager reportManager;
+        private readonly BungieService bungieService;
+        private readonly UserManager userManager;
+
+        public Report(DiscordClient client,
+                      GuildManager guildManager,
+                      ChannelManager channelManager,
+                      ReportManager reportManager,
+                      BungieService bungieService,
+                      UserManager userManager)
+        {
+            this.client = client;
+            this.guildManager = guildManager;
+            this.channelManager = channelManager;
+            this.reportManager = reportManager;
+            this.bungieService = bungieService;
+            this.userManager = userManager;
+            // TODO: Register on voice state change command when are ready for listeners
+            // TOOD: Register reaction add thing
+        }
+
+        [Command("report"), Description("Posts your most recent raid report.")]
+        public Task RaidReport(CommandContext ctx)
+        {
+            using var messageManager = new MessageManager(ctx);
+            if (messageManager.IsPrivate)
+            {
+                // TODO: Make it work in private channel
+                _ = messageManager.SendMessage("Sorry this doesn't work in private messages yet.");
+            }
+            else
+            {
+                _ = reportManager.RequestReport(messageManager.UserId, messageManager.GuildId);
+            }
+            return Task.CompletedTask;
+        }
+    }
 }

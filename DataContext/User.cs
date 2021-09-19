@@ -13,8 +13,6 @@ using System;
 
 #nullable disable
 
-// TODO: Clean up
-// TODO: More complex replationships that do on delete cascade
 namespace Callouts.DataContext
 {
     public partial class User

@@ -13,8 +13,6 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-// TODO: Clean up
-// TODO: More complex replationships that do on delete cascade
 namespace Callouts.DataContext
 {
     public partial class Guild
@@ -35,6 +33,7 @@ namespace Callouts.DataContext
         [Column("clear_spam")]
         public bool ClearSpam { get; set; } = true;
 
+        // TODO: Add event create / delete roles
         // [Column("event_role_id")]
         // public ulong? EventRoleId { get; set; }
 

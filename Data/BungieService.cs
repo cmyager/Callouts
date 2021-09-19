@@ -1,4 +1,4 @@
-using BungieSharper.Client;
+﻿using BungieSharper.Client;
 using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny;
 using BungieSharper.Entities.Destiny.Config;
@@ -7,8 +7,10 @@ using BungieSharper.Entities.Destiny.HistoricalStats.Definitions;
 using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BungieSharper.Entities.Destiny.Entities.Characters;
 
 namespace Callouts.Data
 {
@@ -62,6 +64,18 @@ namespace Callouts.Data
             return profile;
         }
 
+        /// <summary>
+        /// GetHistoricalStats
+        /// </summary>
+        /// <param name="destinyMembershipId"></param>
+        /// <param name="membershipType"></param>
+        /// <param name="modes"></param>
+        /// <param name="characterId"></param>
+        /// <param name="dayend"></param>
+        /// <param name="daystart"></param>
+        /// <param name="groups"></param>
+        /// <param name="periodType"></param>
+        /// <returns></returns>
         public async Task<Dictionary<string, DestinyHistoricalStatsByPeriod>> GetHistoricalStats(long destinyMembershipId, BungieMembershipType membershipType, IEnumerable<DestinyActivityModeType>? modes,
             long characterId = 0, DateTime? dayend = null, DateTime? daystart = null, IEnumerable<DestinyStatsGroupType>? groups = null, PeriodType? periodType = null)
         {
@@ -74,6 +88,46 @@ namespace Callouts.Data
             }
             catch (NonRetryErrorCodeException) {}
             return stats;
+        }
+
+        /// <summary>
+        /// GetActivityHistory
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="destinyMembershipId"></param>
+        /// <param name="membershipType"></param>
+        /// <param name="count"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public async Task<DestinyActivityHistoryResults> GetActivityHistory(DestinyCharacterComponent character, DestinyActivityModeType? mode = null, int? count = null)
+        {
+            DestinyActivityHistoryResults activity = null;
+            try
+            {
+                activity = await Client.Api.Destiny2_GetActivityHistory(character.CharacterId, character.MembershipId, character.MembershipType, count, mode);
+                if (activity.Activities == null || !activity.Activities.Any())
+                {
+                    activity = null;
+                }
+            }
+            catch (Exception) { }
+            return activity;
+        }
+
+        /// <summary>
+        /// GetPostGameCarnageReport
+        /// </summary>
+        /// <param name="activityId"></param>
+        /// <returns></returns>
+        public async Task<DestinyPostGameCarnageReportData> GetPostGameCarnageReport(long activityId)
+        {
+            DestinyPostGameCarnageReportData report = null;
+            try
+            {
+                report = await Client.Api.Destiny2_GetPostGameCarnageReport(activityId);
+            }
+            catch (Exception) { }
+            return report;
         }
 
         // TODO: Figure out a better place for these. I want to use them in both the web and bot

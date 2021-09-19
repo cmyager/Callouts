@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -12,7 +12,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 
 // TODO: only allow authentication for people that are in a guild
-// TODO: Rewrite to use discord client?
 namespace Callouts.Data
 {
     public class UserService

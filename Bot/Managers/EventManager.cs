@@ -1,4 +1,4 @@
-using BungieSharper.Entities;
+﻿using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;
 using Callouts.DataContext;
@@ -14,10 +14,18 @@ using DSharpPlus.Entities;
 using System.Collections.Generic;
 using System;
 
+// TODO: Break this out into EventManager and UserEventManager?
 namespace Callouts
 {
     public class EventManager
     {
+        private readonly string EventDeliminator = "_EVENT_";
+        private readonly string EventReminderDeliminator = "_EVENTREMINDER_";
+        private readonly string EventChannelName = "upcoming-events";
+
+        private readonly string DeleteEmojiName = ":skull:";
+        private readonly DiscordEmoji DeleteEmoji;
+
         private readonly IDbContextFactory<CalloutsContext> contextFactory;
         private readonly ChannelManager channelManager;
         private readonly GuildManager guildManager;
@@ -34,9 +42,12 @@ namespace Callouts
             this.guildManager = guildManager;
             this.userManager = userManager;
             this.client = client;
+
+            DeleteEmoji = DiscordEmoji.FromName(client, DeleteEmojiName);
             client.Ready += OnReady;
             client.GuildAvailable += GuildAvailable;
             client.ComponentInteractionCreated += ComponentInteractionCreatedCallback;
+            client.MessageReactionAdded += MessageReactionAdded;
         }
 
         /// <summary>
@@ -54,22 +65,43 @@ namespace Callouts
         }
 
         /// <summary>
+        /// MessageReactionAdded
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public async Task MessageReactionAdded(DiscordClient sender, MessageReactionAddEventArgs e)
+        {
+            var completeMessage = await e.Channel.GetMessageAsync(e.Message.Id);
+            var user = await e.Guild.GetMemberAsync(e.User.Id);
+
+            // if it is an event message, the emoji is the delete emoji
+            // and the user is the event creator or an admin delete it.
+            if (IsEventMessage(completeMessage)
+                && e.Emoji == DeleteEmoji
+                && (user.Id == completeMessage.Id
+                    || user.Permissions >= Permissions.Administrator))
+            {
+                Event toDeleteEvent = await GetEvent(null, e.Guild.Id, completeMessage.Embeds[0].Title);
+                _ = DeleteEvent(toDeleteEvent);
+            }
+            else
+            {
+                // Remove extra emojis
+                _ = completeMessage.DeleteReactionsEmojiAsync(e.Emoji);
+            }
+        }
+
+        /// <summary>
         /// OnReady
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public async Task OnReady(DiscordClient sender, ReadyEventArgs e)
+        public Task OnReady(DiscordClient sender, ReadyEventArgs e)
         {
-            //foreach (var guild in sender.Guilds)
-            //{
-            //    // Make sure the guild exists
-            //    await guildManager.GetGuild(guild.Value.Id);
-            //    await ListEvents(guild.Value);
-            //}
-            // TODO: Delete events older than X hours
-            // TODO: Setup Scheduler for cleaning channel?
-            // TODO: Setup reminders? this might be build into the scheduling service
+            channelManager.AddRequiredChannel(EventChannelName);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -80,18 +112,30 @@ namespace Callouts
         /// <returns></returns>
         public async Task ComponentInteractionCreatedCallback(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
+            // TODO: This can probably be simplified since both cases do pretty much the same actions
             // Only ack if it is an event button
-            if (e.Interaction.Data.CustomId.Contains("_EVENT_"))
+            if (e.Interaction.Data.CustomId.Contains(EventDeliminator))
             {
                 // Respond so it doesn't get mad
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
 
                 // Parse the things we need
-                string[] splitString = e.Id.Split("_EVENT_");
+                string[] splitString = e.Id.Split(EventDeliminator);
                 UserEventAttending attending = (UserEventAttending)System.Enum.Parse(typeof(UserEventAttending), splitString[1]);
                 int eventId = System.Int32.Parse(splitString[0]);
                 // Update users attendance
-                await UpdateAttendance(eventId, e.User, e.Message, attending);
+                await UpdateAttendance(eventId, e.User.Id, attending, discordMessage: e.Message);
+            }
+            else if (e.Interaction.Data.CustomId.Contains(EventReminderDeliminator))
+            {
+                // Respond so it doesn't get mad
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                // Parse the things we need
+                string[] splitString = e.Id.Split(EventReminderDeliminator);
+                UserEventAttending attending = UserEventAttending.CONFIRMED;
+                int eventId = System.Int32.Parse(splitString[0]);
+                await UpdateAttendance(eventId, e.User.Id, attending);
+
             }
         }
 
@@ -100,25 +144,91 @@ namespace Callouts
         /// </summary>
         /// <param name="eventId"></param>
         /// <returns></returns>
-        public async Task<Event> GetEvent(int eventId)
+        public async Task<Event> GetEvent(int? eventId = null, ulong? guildId = null, string? title = null)
         {
             using var context = contextFactory.CreateDbContext();
+
+            IQueryable<Event> EventQuery = context.Events.AsQueryable();
+            if (eventId != null)
+            {
+                EventQuery = EventQuery.Where(p => p.EventId == eventId);
+            }
+            if (guildId != null)
+            {
+                EventQuery = EventQuery.Where(p => p.GuildId == guildId);
+            }
+            if (title != null)
+            {
+                EventQuery = EventQuery.Where(p => p.Title == title);
+            }
+            EventQuery = EventQuery.Include(p => p.UserEvents);
+            EventQuery = EventQuery.Include(p => p.Guild);
+            EventQuery = EventQuery.Include(p => p.User);
+
             // Get the event
-            var associatedEvent = await context.Events.AsQueryable()
-                .Include(p => p.UserEvents)
-                .Include(p => p.Guild)
-                .Include(p => p.User)
-                .FirstAsync(p => p.EventId == eventId,
-                            cancellationToken: CancellationToken.None);
+            var associatedEvent = await EventQuery.FirstAsync(cancellationToken: CancellationToken.None);
             return associatedEvent;
         }
 
-        private async Task UpdateAttendance(int eventId, DiscordUser discordUser, DiscordMessage discordMessage, UserEventAttending attending)
+        /// <summary>
+        /// GetUserEvent
+        /// </summary>
+        /// <param name="userEventId"></param>
+        /// <returns></returns>
+        public async Task<UserEvent> GetUserEvent(int userEventId)
+        {
+            using var context = contextFactory.CreateDbContext();
+
+            IQueryable<UserEvent> UserEventQuery = context.UserEvents.AsQueryable();
+            UserEventQuery = UserEventQuery.Where(p => p.UserEventId == userEventId);
+
+            UserEventQuery = UserEventQuery.Include(p => p.Event);
+            UserEventQuery = UserEventQuery.Include(p => p.Guild);
+            UserEventQuery = UserEventQuery.Include(p => p.User);
+
+            // Get the UserEvent
+            var associatedUserEvent = await UserEventQuery.FirstAsync(cancellationToken: CancellationToken.None);
+            return associatedUserEvent;
+        }
+
+        /// <summary>
+        /// associatedEvent
+        /// </summary>
+        /// <param name="associatedEvent"></param>
+        /// <returns></returns>
+        public async Task<DiscordMessage> GetEventMessage(Event associatedEvent)
+        {
+            // TODO: This can slow down the process quite a bit.
+            DiscordGuild guild = await client.GetGuildAsync(associatedEvent.GuildId);
+            var EventsChannel = await channelManager.GetChannel(guild, EventChannelName);
+            DiscordMessage foundMessage = null;
+            //await ListEvents(guild); // TODO: This slows it down real bad
+
+            foreach (DiscordMessage message in (await EventsChannel.GetMessagesAsync(50)))
+            {
+                if (IsEventMessage(message) && message.Embeds[0].Title == associatedEvent.Title)
+                {
+                    foundMessage = message;
+                    break;
+                }
+            }
+            return foundMessage;
+        }
+
+        /// <summary>
+        /// UpdateAttendance
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <param name="discordUser"></param>
+        /// <param name="discordMessage"></param>
+        /// <param name="attending"></param>
+        /// <returns></returns>
+        public async Task UpdateAttendance(int eventId, ulong userId, UserEventAttending attending, int? attempts=null, DiscordMessage discordMessage=null)
         {
             using var context = contextFactory.CreateDbContext();
 
             // Make sure the exists in the database
-            var user = await userManager.GetUserByUserId(discordUser.Id);
+            var user = await userManager.GetUserByUserId(userId);
 
             // Get the event
             var associatedEvent = await GetEvent(eventId);
@@ -147,12 +257,20 @@ namespace Callouts
                 {
                     userEvent.LastUpdated = DateTime.UtcNow;
                 }
+                if (attempts != null)
+                {
+                    userEvent.Attempts = attempts.Value;
+                }
                 context.Update(userEvent);
             }
             if (await context.SaveChangesAsync() > 0)
             {
                 associatedEvent = await GetEvent(eventId);
                 var messagewithembed = await CreateEventMessage(associatedEvent);
+                if (discordMessage == null)
+                {
+                    discordMessage = await GetEventMessage(associatedEvent);  // TODO: This slows it down real bad
+                }
                 await discordMessage.ModifyAsync(messagewithembed.Embed);
                 _ = ListEvents(await client.GetGuildAsync(associatedEvent.GuildId));
             }
@@ -170,7 +288,7 @@ namespace Callouts
 
             var dbEventTitles = guild.Events.Select(p => p.Title).ToList();
             var messageTitles = new List<string>();
-            var EventsChannel = await channelManager.GetChannel(discordGuild, "upcoming-events");
+            var EventsChannel = await channelManager.GetChannel(discordGuild, EventChannelName);
 
             foreach (DiscordMessage message in (await EventsChannel.GetMessagesAsync(999)))
             {
@@ -198,24 +316,82 @@ namespace Callouts
             }
         }
 
+        /// <summary>
+        /// CreateEventMessage
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
         public async Task<DiscordMessageBuilder> CreateEventMessage(Event e)
         {
-            string timezone = "US/Central";
+            DiscordEmbedBuilder eventEmbed = await CreateEventEmbed(e);
+
+            var checkmarkEmoji = new DiscordComponentEmoji(DiscordEmoji.FromName(client, ":white_check_mark:"));
+            var redXEmoji = new DiscordComponentEmoji(DiscordEmoji.FromName(client, ":x:"));
+            var GreyQuestion = new DiscordComponentEmoji(DiscordEmoji.FromName(client, ":grey_question:"));
+            List<DiscordButtonComponent> buttons = new List<DiscordButtonComponent>
+            {
+                new DiscordButtonComponent(ButtonStyle.Primary, $"{e.EventId}{EventDeliminator}{UserEventAttending.ACCEPTED}", null, false, checkmarkEmoji),
+                new DiscordButtonComponent(ButtonStyle.Primary, $"{e.EventId}{EventDeliminator}{UserEventAttending.DECLINED}", null, false, redXEmoji),
+                new DiscordButtonComponent(ButtonStyle.Primary, $"{e.EventId}{EventDeliminator}{UserEventAttending.MAYBE}", null, false, GreyQuestion)
+            };
+            DiscordMessageBuilder message = new DiscordMessageBuilder();
+            message.AddEmbed(eventEmbed);
+            message.AddComponents(buttons);
+            return message;
+        }
+
+        /// <summary>
+        /// CreateEventReminderMessage
+        /// </summary>
+        /// <param name="userEvent"></param>
+        /// <returns></returns>
+        public async Task<DiscordMessageBuilder> CreateEventReminderMessage(UserEvent userEvent)
+        {
+            DiscordMessageBuilder message = new DiscordMessageBuilder()
+            {
+                Content = "You have been removed from the event"
+            };
+            if (userEvent.Attending == UserEventAttending.ACCEPTED)
+            {
+                DiscordEmbedBuilder eventEmbed = await CreateEventReminderEmbed(userEvent);
+                var checkmarkEmoji = new DiscordComponentEmoji(DiscordEmoji.FromName(client, ":white_check_mark:"));
+                List<DiscordButtonComponent> buttons = new List<DiscordButtonComponent>
+                {
+                    // TODO: Think about the button ID structure. Attempts is not really needed
+                    new DiscordButtonComponent(ButtonStyle.Primary, $"{userEvent.UserEventId}{EventReminderDeliminator}{userEvent.Attempts}", null, false, checkmarkEmoji),
+                };
+                message.Content = "";
+                message.AddEmbed(eventEmbed);
+                message.AddComponents(buttons);
+            }
+            return message;
+        }
+
+        /// <summary>
+        /// CreateEventMessage
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public async Task<DiscordEmbedBuilder> CreateEventEmbed(Event e)
+        {
             DiscordGuild guild = await client.GetGuildAsync(e.GuildId);
+
+            string footerText = $"Created by {(await guild.GetMemberAsync(e.UserId)).DisplayName}\n";
+            footerText += $"React with {DeleteEmoji} to remove this event";
 
             var embed = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Blue,
                 Title = e.Title,
-                Footer = new DiscordEmbedBuilder.EmbedFooter() { Text = $"Created by {(await guild.GetMemberAsync(e.UserId)).DisplayName}" },
+                Footer = new DiscordEmbedBuilder.EmbedFooter() { Text = footerText },
             };
 
             if (e.Description != null || e.Description != string.Empty)
             {
                 embed.Description = e.Description;
             }
-            //TODO UTC TO CENTRAL
-            embed.AddField("Time", $"{e.StartTime.ToString("dddd MMM dd, yyyy @ hh:mm tt")} {timezone}", false);
+
+            embed.AddField("Time", $"{e.CentralTime.ToString("dddd MMM dd, yyyy @ hh:mm tt")} US/Central", false);
 
             string acceptedString = e.MaxMembers != null ? $"__Accepted({e.Accepted.Count}/{e.MaxMembers})__" : "__Accepted__";
             string declinedString = "__Declined__";
@@ -270,20 +446,36 @@ namespace Callouts
             {
                 embed.AddField(standbyString, standbyValue, false);
             }
+            return embed;
+        }
 
-            var checkmarkEmoji = new DiscordComponentEmoji(DiscordEmoji.FromName(client, ":white_check_mark:"));
-            var redXEmoji = new DiscordComponentEmoji(DiscordEmoji.FromName(client, ":x:"));
-            var GreyQuestion = new DiscordComponentEmoji(DiscordEmoji.FromName(client, ":grey_question:"));
-            List<DiscordButtonComponent> buttons = new List<DiscordButtonComponent>
+        /// <summary>
+        /// CreateEventReminderEmbed
+        /// </summary>
+        /// <param name="userEvent"></param>
+        /// <returns></returns>
+        public async Task<DiscordEmbedBuilder> CreateEventReminderEmbed(UserEvent userEvent)
+        {
+            Event completeEvent = await GetEvent(userEvent.EventId);
+            DiscordEmbedBuilder eventReminderEmbed = await CreateEventEmbed(completeEvent);
+            DiscordGuild guild = await client.GetGuildAsync(userEvent.GuildId);
+
+            string footerText = $"Please confirm your attendance.\nAttempt {userEvent.Attempts}/5";
+            eventReminderEmbed.Footer = new DiscordEmbedBuilder.EmbedFooter() { Text = footerText };
+
+            string titleHold = eventReminderEmbed.Title;
+            DiscordEmbedField timeHold = eventReminderEmbed.Fields[0];
+            string newTitle = "Event Reminder";
+            if (userEvent.IsStandby)
             {
-                new DiscordButtonComponent(ButtonStyle.Primary, $"{e.EventId}_EVENT_{UserEventAttending.ACCEPTED}", null, false, checkmarkEmoji),
-                new DiscordButtonComponent(ButtonStyle.Primary, $"{e.EventId}_EVENT_{UserEventAttending.DECLINED}", null, false, redXEmoji),
-                new DiscordButtonComponent(ButtonStyle.Primary, $"{e.EventId}_EVENT_{UserEventAttending.MAYBE}", null, false, GreyQuestion)
-            };
-            DiscordMessageBuilder message = new DiscordMessageBuilder();
-            message.AddEmbed(embed);
-            message.AddComponents(buttons);
-            return message;
+                newTitle = $"{newTitle} (Standby)";
+            }
+            eventReminderEmbed.Title = newTitle;
+            eventReminderEmbed.RemoveFieldRange(0, 4);
+            eventReminderEmbed.AddField("Server", guild.Name, false);
+            eventReminderEmbed.AddField("Event", titleHold, false);
+            eventReminderEmbed.AddField(timeHold.Name, timeHold.Value, false);
+            return eventReminderEmbed;
         }
 
         /// <summary>
@@ -295,7 +487,7 @@ namespace Callouts
         {
             bool EventCreateMessageFound = false;
 
-            var EventsChannel = await channelManager.GetChannel(guild, "upcoming-events");
+            var EventsChannel = await channelManager.GetChannel(guild, EventChannelName);
             foreach (DiscordMessage message in (await EventsChannel.GetMessagesAsync(999)))
             {
                 if (IsEventCreateMessage(message))
@@ -351,7 +543,7 @@ namespace Callouts
         public bool IsEventMessage(DiscordMessage message)
         {
             bool IsMessage = false;
-            if (message.Channel.Name == "upcoming-events" && message.Embeds.Count > 0 && message.Embeds[0].Fields.Count >= 3)
+            if (message.Channel.Name == EventChannelName && message.Embeds.Count > 0 && message.Embeds[0].Fields.Count >= 3)
             {
                 var embed = message.Embeds[0];
                 IsMessage = (embed.Fields[0].Name == "Time"
@@ -382,5 +574,22 @@ namespace Callouts
             }
             return eventInfo;
         }
+
+        /// <summary>
+        /// DeleteEvent
+        /// </summary>
+        /// <param name="deleteEvent"></param>
+        /// <returns></returns>
+        public async Task DeleteEvent(Event deleteEvent)
+        {
+            using var context = contextFactory.CreateDbContext();
+            if (deleteEvent != null)
+            {
+                context.Remove(deleteEvent);
+                await context.SaveChangesAsync();
+                _ = ListEvents(await client.GetGuildAsync(deleteEvent.GuildId));
+            }
+        }
+
     }
 }

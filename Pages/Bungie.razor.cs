@@ -1,4 +1,4 @@
-using BungieSharper.Entities;
+﻿using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny;
 using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;
@@ -19,12 +19,16 @@ namespace Callouts.Pages
     {
         [Inject]
         NavigationManager NavigationManager { get; set; }
+
         [Inject]
         UserManager userManager { get; set; }
+
         [Inject]
         BungieService bungieService { get; set; }
+
         [Inject]
         AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
         [Inject]
         UserService userService { get; set; }
 

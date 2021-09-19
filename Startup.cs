@@ -1,4 +1,4 @@
-using Blazorise;
+﻿using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using BungieSharper.Client;
@@ -95,6 +95,8 @@ namespace Callouts
             services.AddSingleton<UserManager>();
             services.AddSingleton<ChannelManager>();
             services.AddSingleton<EventManager>();
+            services.AddSingleton<ReportManager>();
+            services.AddSingleton<PeriodicTaskService>();
             // TODO: Add more singletons here
 
             services.AddHttpContextAccessor();

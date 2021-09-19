@@ -1,13 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using BungieSharper.Entities;
 
-
-// TODO: Clean up
-// TODO: More complex replationships that do on delete cascade
 #nullable disable
 namespace Callouts.DataContext
 {
@@ -28,8 +25,6 @@ namespace Callouts.DataContext
         [Column("user_event_id")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int? UserEventId { get; set; }
-        //public int? UserEventId { get; set; }
-        //TODO
 
         //[Key]
         [Column("user_id")]
@@ -52,11 +47,8 @@ namespace Callouts.DataContext
         [Column("last_updated", TypeName = "datetime")]
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
-        // [Column("confirmed")]
-        // public int Confirmed { get; set; } = 0;
-
         [Column("attempts")]
-        public int Attempts { get; set; } = 1;
+        public int Attempts { get; set; } = 0;
 
 
         [ForeignKey(nameof(EventId))]
@@ -70,5 +62,17 @@ namespace Callouts.DataContext
         [ForeignKey(nameof(UserId))]
         [InverseProperty("UserEvents")]
         public virtual User User { get; set; }
+
+        [NotMapped]
+        public bool IsStandby => this.Event.Standby.Contains(this);
+
+        public void AddAttempt()
+        {
+            this.Attempts += 1;
+            if (this.Attempts > 5)
+            {
+                this.Attending = UserEventAttending.REJECTED;
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Callouts
     {
         //private readonly DiscordClient Client;
 
-        private readonly List<string> RequiredChannels = new() { "bot-commands", "upcoming-events", "raid-reports" };
+        private readonly List<string> RequiredChannels = new();
 
         /// <summary>
         /// ChannelManager
@@ -22,6 +22,14 @@ namespace Callouts
             //Client = client;
             client.GuildAvailable += CreateRequiredChannelsOnJoin;
             client.GuildCreated += CreateRequiredChannelsOnJoin;
+        }
+
+        public void AddRequiredChannel(string channelName)
+        {
+            if (!RequiredChannels.Contains(channelName))
+            {
+                RequiredChannels.Add(channelName);
+            }
         }
 
         /// <summary>
@@ -59,7 +67,10 @@ namespace Callouts
             }
         }
         // TODO
-        //  - Clean channel function
-        //  - Clean channel periodic task
+        //  Clean channel periodic task
+        //  - Clean all messages from bot-commands
+        //  - clean all non bot messages from reports
+        //  - clean reports older than a certain day from reports
+        //  - Should these be done here or in the manager for that thing
     }
 }

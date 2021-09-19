@@ -1,4 +1,4 @@
-using Callouts.DataContext;
+﻿using Callouts.DataContext;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
@@ -10,17 +10,34 @@ namespace Callouts
 {
     public class GuildManager
     {
+        private readonly string ChannelName = "bot-commands";
         private readonly IDbContextFactory<CalloutsContext> ContextFactory;
         private readonly DiscordClient Client;
+        private readonly ChannelManager channelManager;
 
-        public GuildManager(IDbContextFactory<CalloutsContext> contextFactory, DiscordClient client)
+        public GuildManager(IDbContextFactory<CalloutsContext> contextFactory, ChannelManager channelManager, DiscordClient client)
         {
             ContextFactory = contextFactory;
             Client = client;
+            this.channelManager = channelManager;
+            Client.Ready += OnReady;
             Client.Ready += AddRemoveOfflineGuilds;
             Client.GuildCreated += RegisterNewGuild;
             Client.GuildDeleted += RemoveDeletedGuild;
         }
+
+        /// <summary>
+        /// OnReady
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public Task OnReady(DiscordClient sender, ReadyEventArgs e)
+        {
+            channelManager.AddRequiredChannel(ChannelName);
+            return Task.CompletedTask;
+        }
+
         public async Task<Guild> GetGuild(ulong guildId)
         {
             using var context = ContextFactory.CreateDbContext();

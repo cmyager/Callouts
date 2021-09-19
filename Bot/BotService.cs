@@ -1,4 +1,4 @@
-using Callouts.DataContext;
+﻿using Callouts.DataContext;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -30,36 +30,42 @@ namespace Callouts
         private readonly UserManager userManager;
         private readonly ChannelManager channelManager;
         private readonly BungieService bungieService;
+        private readonly ReportManager reportManager;
         private readonly EventManager eventManager;
         private readonly IConfiguration config;
         private readonly ILogger<BotService> logger;
         private readonly IDbContextFactory<CalloutsContext> ContextFactory;
         private readonly AsyncExecutionService asyncExecutionService;
         private readonly SchedulingService schedulingService;
+        private readonly PeriodicTaskService periodicTaskService;
 
         public BotService(DiscordClient client,
                           GuildManager guildManager,
                           UserManager userManager,
                           ChannelManager channelManager,
                           BungieService bungieService,
+                          ReportManager reportManager,
                           EventManager eventManager,
                           IConfiguration config,
                           ILogger<BotService> logger,
                           IDbContextFactory<CalloutsContext> ContextFactory,
                           AsyncExecutionService asyncExecutionService,
-                          SchedulingService schedulingService)
+                          SchedulingService schedulingService,
+                          PeriodicTaskService periodicTaskService)
         {
             this.Client = client;
             this.guildManager = guildManager;
             this.userManager = userManager;
             this.channelManager = channelManager;
             this.bungieService = bungieService;
+            this.reportManager = reportManager;
             this.eventManager = eventManager;
             this.config = config;
             this.logger = logger;
             this.ContextFactory = ContextFactory;
             this.asyncExecutionService = asyncExecutionService;
             this.schedulingService = schedulingService;
+            this.periodicTaskService = periodicTaskService;
         }
 
 
@@ -84,6 +90,7 @@ namespace Callouts
             services.AddSingleton<UserManager>(userManager);
             services.AddSingleton<ChannelManager>(channelManager);
             services.AddSingleton<BungieService>(bungieService);
+            services.AddSingleton<ReportManager>(reportManager);
             services.AddSingleton<EventManager>(eventManager);
 
             // Set up commands
@@ -103,6 +110,7 @@ namespace Callouts
             //Commands.RegisterCommands<ExampleInteractiveCommands>();
             Commands.RegisterCommands<Core>();
             Commands.RegisterCommands<Stats>();
+            Commands.RegisterCommands<Report>();
 
             // Connect and log in
             await Client.ConnectAsync();
@@ -113,6 +121,7 @@ namespace Callouts
         }
         private Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
         {
+            periodicTaskService.StartPeriodicTimers();
             sender.Logger.LogInformation(BotEventId, "Client is ready to process events.");
             return Task.CompletedTask;
         }
@@ -131,21 +140,10 @@ namespace Callouts
             e.Context.Client.Logger.LogInformation(BotEventId, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'");
             return Task.CompletedTask;
         }
-        private async Task Commands_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
+        private Task Commands_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
         {
             e.Context.Client.Logger.LogError(BotEventId, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
-            // if (e.Exception is ChecksFailedException ex)
-            // {
-            //     var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-            //     var embed = new DiscordEmbedBuilder
-            //     {
-            //         Title = "Access denied",
-            //         Description = $"{emoji} You do not have the permissions required to execute this command.",
-            //         //red
-            //         Color = new DiscordColor(0xFF0000)
-            //     };
-            //     await e.Context.RespondAsync(embed);
-            // }
+            return Task.CompletedTask;
         }
     }
 }

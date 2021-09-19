@@ -1,4 +1,4 @@
-using BungieSharper.Entities;
+﻿using BungieSharper.Entities;
 using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;
 using Callouts.DataContext;
@@ -29,6 +29,7 @@ namespace Callouts
         }
 
         // This is a possible todo.
+        // TODO: If a user is in an event and they are no longer in the server the bot crashes
         //public async Task RemoveOfflineUsers(DiscordClient sender, ReadyEventArgs e)
         //{
         //}
@@ -40,7 +41,7 @@ namespace Callouts
         //}
 
         public async Task RemoveGuildMemberRemoved(DiscordClient sender, GuildMemberRemoveEventArgs e)
-        { 
+        {
             bool found = false;
             foreach (var guild in sender.Guilds)
             {
@@ -92,13 +93,11 @@ namespace Callouts
             return user;
         }
 
-        public async Task<User> GetUserByPlatformId(BungieMembershipType platform, ulong UserId)
+        public async Task<User> GetUserByPlatformId(BungieMembershipType platform, long platformId)
         {
-            // TODO: make this work for all the platforms////////
-            // TODO: With the change to only storing the default playform this is simpler now
             using var context = ContextFactory.CreateDbContext();
             return await context.Users.AsQueryable()
-                .FirstOrDefaultAsync(p => p.UserId == UserId,
+                .FirstOrDefaultAsync(p => p.PrimaryPlatformId == platformId && p.Platform == platform,
                                      cancellationToken: CancellationToken.None);
         }
 

@@ -1,5 +1,47 @@
-@page "/"
+﻿@page "/"
+@using Callouts.Data
+
+@* <Alert @ref="AccountErrorAlert" Color="Color.Warning">
+    @alertText
+    <CloseButton />
+</Alert> *@
+
+
 @*// TODO: Add stuff?*@
 <h1>Callouts</h1>
 
 
+
+@* @code
+{
+    // TODO: Make it so you must be in a clan with the bot for auth.
+    [Inject]
+    AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
+    [Inject]
+    UserService userService { get; set; }
+
+    Alert AccountErrorAlert;
+    string alertText = "Are you in a clan that uses Callouts?";
+    Color AlertColor = Color.Warning;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AccountErrorAlert.Show();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            var discUserClaim = userService.GetInfo(authState);
+            if (discUserClaim != null)
+            {
+            }
+        }
+            DiscordUserInfo = await userManager.GetUserByUserId(discUserClaim.UserId);
+            if (DiscordUserInfo.BungieId != null)
+            {
+                bungieProfile = await bungieService.GetUserById(DiscordUserInfo.BungieId.Value, BungieMembershipType.BungieNext);
+                await GetBungieProfile();
+            }
+    }
+
+} *@

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,24 +33,36 @@ namespace Callouts
 {
     public class MessageManager : IDisposable
     {
-        private readonly CommandContext Ctx;
-        private List<DiscordMessage> MessagesToClean = new();
+        //private readonly CommandContext Ctx;
+        private readonly List<DiscordMessage> MessagesToClean = new();
         public ulong UserId;
+        public bool IsPrivate = false;
+        public ulong? GuildId = null;
+        private DiscordChannel channel;
+        private DiscordMessage message = null;
+        private DiscordMember member = null;
 
         public MessageManager(CommandContext ctx)
         {
-            Ctx = ctx;
-            if (Ctx.Channel.IsPrivate)
+            //Ctx = ctx;
+            channel = ctx.Channel;
+            if (channel.IsPrivate)
             {
-
-                UserId = Ctx.Message.Author.Id;
+                UserId = ctx.Message.Author.Id;
+                IsPrivate = true;
             }
             else
             {
-                UserId = Ctx.Member.Id;
+                member = ctx.Member;
+                UserId = ctx.Member.Id;
+                GuildId = ctx.Guild.Id;
             }
-            Ctx.TriggerTypingAsync();
-            AddMessageToClean(Ctx.Message);
+            ctx.TriggerTypingAsync();
+            AddMessageToClean(ctx.Message);
+        }
+        public MessageManager(ulong userId, ulong? guildId)
+        {
+
         }
 
         public void Dispose()
@@ -61,9 +73,9 @@ namespace Callouts
 
         public void AddMessageToClean(DiscordMessage message)
         {
-            if (!Ctx.Channel.IsPrivate && Ctx.Message != null)
+            if (!IsPrivate && message != null)
             {
-                MessagesToClean.Add(Ctx.Message);
+                MessagesToClean.Add(message);
             }
         }
 
@@ -71,7 +83,7 @@ namespace Callouts
         {
             if (MessagesToClean.Count > 0)
             {
-                _ = Ctx.Channel.DeleteMessagesAsync(MessagesToClean);
+                _ = channel.DeleteMessagesAsync(MessagesToClean);
             }
         }
 
@@ -89,7 +101,7 @@ namespace Callouts
         }
         public async Task<DiscordMessage> SendMessage(DiscordMessageBuilder builder)
         {
-            return await Ctx.Channel.SendMessageAsync(builder);
+            return await channel.SendMessageAsync(builder);
         }
 
 
@@ -107,13 +119,13 @@ namespace Callouts
         }
         public async Task<DiscordMessage> SendPrivateMessage(DiscordMessageBuilder builder)
         {
-            if (Ctx.Channel.IsPrivate)
+            if (channel.IsPrivate)
             {
                 return await SendMessage(builder);
             }
             else
             {
-                return await Ctx.Member.SendMessageAsync(builder);
+                return await member.SendMessageAsync(builder);
             }
         }
 

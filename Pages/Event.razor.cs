@@ -1,4 +1,4 @@
-using BungieSharper.Entities.Destiny.Responses;
+﻿using BungieSharper.Entities.Destiny.Responses;
 using BungieSharper.Entities.User;
 using Callouts.Data;
 using Callouts.DataContext;
@@ -48,12 +48,6 @@ namespace Callouts.Pages
         private UserMembershipData bungieProfile { get; set; }
         private DestinyProfileResponse PrimaryCharacterProfile { get; set; }
 
-        Alert AccountErrorAlert;
-        Alert UnlinkAlert;
-        Alert CharacterErrorAlert;
-
-
-
 
         protected override async Task OnInitializedAsync()
         {
@@ -67,7 +61,6 @@ namespace Callouts.Pages
         //CreateEvent
         public async Task CreateEvent()
         {
-
             ulong guildID = 765038177605386240;
             Guild guild = await guildManager.GetGuild(guildID);
             DataContext.Event newEvent = new DataContext.Event()
@@ -80,7 +73,7 @@ namespace Callouts.Pages
                 //Guild = guild,
                 //User = DiscordUserInfo,
                 UserId = DiscordUserInfo.UserId,
-                StartTime = (DateTime.Now).AddSeconds(30)
+                StartTime = (DateTime.UtcNow).AddHours(1).AddMinutes(2)
             };
             await eventManager.AddEvent(newEvent);
         }
