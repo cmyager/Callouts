@@ -55,7 +55,6 @@ namespace Callouts
             this.bungieService = bungieService;
             this.userManager = userManager;
             // TODO: Register on voice state change command when are ready for listeners
-            // TOOD: Register reaction add thing
         }
 
         [Command("report"), Description("Posts your most recent raid report.")]

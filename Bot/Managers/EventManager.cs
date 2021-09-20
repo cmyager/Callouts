@@ -485,10 +485,22 @@ namespace Callouts
         /// <returns></returns>
         public async Task CleanChannel(DiscordGuild guild)
         {
+            using var context = contextFactory.CreateDbContext();
             bool EventCreateMessageFound = false;
 
+            // Remove events older than 1 day
+            var EventQuery = await context.Events.AsQueryable()
+                .Where(p => p.GuildId == guild.Id).ToListAsync();
+            foreach (Event e in EventQuery)
+            {
+                if (DateTime.UtcNow - e.StartTime > TimeSpan.FromHours(24))
+                {
+                    await DeleteEvent(e, listEvents: false);
+                }
+            }
+
             var EventsChannel = await channelManager.GetChannel(guild, EventChannelName);
-            foreach (DiscordMessage message in (await EventsChannel.GetMessagesAsync(999)))
+            foreach (DiscordMessage message in (await EventsChannel.GetMessagesAsync()))
             {
                 if (IsEventCreateMessage(message))
                 {
@@ -580,14 +592,17 @@ namespace Callouts
         /// </summary>
         /// <param name="deleteEvent"></param>
         /// <returns></returns>
-        public async Task DeleteEvent(Event deleteEvent)
+        public async Task DeleteEvent(Event deleteEvent, bool listEvents=true)
         {
             using var context = contextFactory.CreateDbContext();
             if (deleteEvent != null)
             {
                 context.Remove(deleteEvent);
                 await context.SaveChangesAsync();
-                _ = ListEvents(await client.GetGuildAsync(deleteEvent.GuildId));
+                if (listEvents)
+                {
+                    _ = ListEvents(await client.GetGuildAsync(deleteEvent.GuildId));
+                }
             }
         }
 
