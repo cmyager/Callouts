@@ -45,23 +45,8 @@ namespace Callouts
 
             DeleteEmoji = DiscordEmoji.FromName(client, DeleteEmojiName);
             client.Ready += OnReady;
-            client.GuildAvailable += GuildAvailable;
             client.ComponentInteractionCreated += ComponentInteractionCreatedCallback;
             client.MessageReactionAdded += MessageReactionAdded;
-        }
-
-        /// <summary>
-        /// GuildAvailable
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        public async Task GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
-        {
-            // Make sure the guild exists
-            await guildManager.GetGuild(e.Guild.Id);
-            // TODO: Make this a scheuled async task once that is ready
-            _ = ListEvents(e.Guild);
         }
 
         /// <summary>
@@ -519,17 +504,6 @@ namespace Callouts
                 builder.AddComponents(new List<DiscordComponent>() { button });
                 _ = EventsChannel.SendMessageAsync(builder);
             }
-        }
-
-        // TODO: Might merge these into one method. In the old python bot it was 3 because there was a purge method
-        public bool PurgeEventMessageCheck(DiscordMessage message)
-        {
-            bool deleteMessage = true;
-            if (IsEventCreateMessage(message) || IsEventMessage(message))
-            {
-                deleteMessage = false;
-            }
-            return deleteMessage;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-using Callouts.DataContext;
+﻿using Callouts.DataContext;
 using Callouts.Data;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -112,7 +112,7 @@ namespace Callouts
             using var messageManager = new MessageManager(ctx);
             var discordUser = await userManager.GetUserByUserId(messageManager.UserId);
             var activityMode = new List<DestinyActivityModeType> { DestinyActivityModeType.AllPvP };
-            var historicalStats = await bungieService.GetHistoricalStats(discordUser.PrimaryPlatformId.Value, discordUser.Platform, activityMode);           
+            var historicalStats = await bungieService.GetHistoricalStats(discordUser.PrimaryPlatformId.Value, discordUser.Platform, activityMode);
             BungieService.PvPStats pvpStats = new BungieService.PvPStats(historicalStats["allPvP"].AllTime);
             await messageManager.SendMessage(GeneratePvPStatsEmbed(pvpStats, discordUser, "Crucible Stats"));
         }
@@ -140,7 +140,7 @@ namespace Callouts
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
-        // TODO: There is probably a better way to deal with embeds in general that isn't so hard coded
+        // TODO: There is probably a better way to deal with embeds in general that isn't so hard coded: Automapper?
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>

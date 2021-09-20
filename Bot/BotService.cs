@@ -107,7 +107,6 @@ namespace Callouts
             Commands.CommandErrored += Commands_CommandErrored;
 
             // Register commands
-            //Commands.RegisterCommands<ExampleInteractiveCommands>();
             Commands.RegisterCommands<Core>();
             Commands.RegisterCommands<Stats>();
             Commands.RegisterCommands<Report>();

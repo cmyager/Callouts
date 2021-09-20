@@ -35,6 +35,7 @@ namespace Callouts.Pages
         private User DiscordUserInfo = null;
 
         //TODO: Remove my ID. Makes debugging easier for now
+        // TODO: REDO THIS to use the new bungie ID
         private long userSubmitBungieId { get; set; } = 5396677;
         private UserMembershipData bungieProfile { get; set; }
         private DestinyProfileResponse PrimaryCharacterProfile { get; set; }

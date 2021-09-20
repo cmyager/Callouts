@@ -10,15 +10,25 @@ namespace Callouts.Data
         public IServiceProvider serviceProvider;
         private Timer CleanChannelsTimer { get; set; }
         // TODO: Could have one to update the bungie.net manifest
-        // TODO: Reports on raid channel entry here or as a task?
-        // TODO: Auto remove events older than 1 day
+
         private async void CleanChannelCallback(object? _)
         {
+            GuildManager guildManager = serviceProvider.GetRequiredService<GuildManager>();
             EventManager eventManager = serviceProvider.GetRequiredService<EventManager>();
+            ReportManager reportManager = serviceProvider.GetRequiredService<ReportManager>();
             DiscordClient client = serviceProvider.GetRequiredService<DiscordClient>();
             foreach (var guild in client.Guilds)
             {
+                // Make sure the guild exists
+                await guildManager.GetGuild(guild.Value.Id);
+
+                // Clean Events Channel
                 await eventManager.ListEvents(guild.Value);
+
+                // Clean reports Channel
+                await reportManager.CleanChannel(guild.Value);
+
+                // TODO: Bot commands channel
             }
         }
 
@@ -28,7 +38,7 @@ namespace Callouts.Data
         }
         public void StartPeriodicTimers()
         {
-            this.CleanChannelsTimer = new Timer(CleanChannelCallback, null, TimeSpan.FromSeconds(10), TimeSpan.FromHours(1));
+            this.CleanChannelsTimer = new Timer(CleanChannelCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(1));
         }
 
         public void Dispose()

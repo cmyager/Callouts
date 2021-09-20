@@ -66,11 +66,5 @@ namespace Callouts
                 await GetChannel(e.Guild, channelName);
             }
         }
-        // TODO
-        //  Clean channel periodic task
-        //  - Clean all messages from bot-commands
-        //  - clean all non bot messages from reports
-        //  - clean reports older than a certain day from reports
-        //  - Should these be done here or in the manager for that thing
     }
 }

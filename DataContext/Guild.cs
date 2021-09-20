@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using BungieSharper.Entities;
 using System.ComponentModel.DataAnnotations.Schema;

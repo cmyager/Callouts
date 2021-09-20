@@ -54,7 +54,6 @@ namespace Callouts.Data
         {
             switch (this.Job)
             {
-                // TODO: Test this
                 case FetchReport fetch:
                     this.timer = new Timer(this.FetchReportCallback, this.Job, fetch.TimeUntilExecution, fetch.RepeatInterval.Value);
                     break;

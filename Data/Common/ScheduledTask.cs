@@ -31,7 +31,6 @@ using System.ComponentModel;
 
 namespace Callouts.Data
 {
-    // TODO Consider: Should we store the count of times ran or something and allow it to be limited that way?
     public abstract class ScheduledTask : IEquatable<ScheduledTask>
     {
         public int Id { get; set; }

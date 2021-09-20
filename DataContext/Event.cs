@@ -68,6 +68,9 @@ namespace Callouts.DataContext
         [NotMapped]
         public List<UserEvent> Standby { get { return GetStandby(); } }
 
+        // TODO DEF consider: this setup made getting standby for reminders weird.
+        // Could just do a get(UserEventAttending) and sort by last update
+
         // TODO Consider: These could be removed and this could just be done by sorting by last update
         // It would simplify the event creation a bit I imagine, but this makes it readable
         [NotMapped]

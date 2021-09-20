@@ -8,7 +8,6 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-// TODO: Clean up
 #nullable disable
 
 namespace Callouts.DataContext
@@ -72,14 +71,13 @@ namespace Callouts.DataContext
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 
-        // TODO: Need to add dbsets
         public virtual DbSet<Event> Events { get; set; }
         public virtual DbSet<Guild> Guilds { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserEvent> UserEvents { get; set; }
     }
 
-    //TODO Describe
+    // Cool thing that sets all datetimes to UTC
     // https://github.com/dotnet/efcore/issues/4711#issuecomment-589842988
     public static class UtcDateAnnotation
     {

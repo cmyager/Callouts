@@ -2,8 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-//TODO this might not be needed
-//We might want to think about removing it and making everything async
 namespace Callouts.Data
 {
     public sealed class AsyncExecutionService
