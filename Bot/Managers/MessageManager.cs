@@ -29,6 +29,8 @@ using BungieSharper.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
+// TODO: Different constructors that can take ctx, message, user
+// is_private_channel function
 namespace Callouts
 {
     public class MessageManager : IDisposable

@@ -51,7 +51,7 @@ namespace Callouts.Data
 
         // Overrides
         public override bool IsRepeating { get; set; } = true;
-        public override TimeSpan? RepeatInterval { get; set; } = TimeSpan.FromMinutes(10);
+        public override TimeSpan? RepeatInterval { get; set; } = TimeSpan.FromMinutes(1);
         public override TimeSpan TimeUntilExecution
         {
             get
@@ -81,8 +81,9 @@ namespace Callouts.Data
     {
         // Class specific
         public ulong? GuildId { get; set; }
-        public ulong DiscordUserId { get; set; }
-        public bool filter { get; set; } = false;
+        public ulong? DiscordUserId { get; set; }
+        public bool Filter { get; set; } = false;
+        public ulong? ChannelId { get; set; }
 
         // Overrides
         public override bool IsRepeating { get; set; } = false;

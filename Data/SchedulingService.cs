@@ -162,8 +162,18 @@ namespace Callouts.Data
         {
             switch (task)
             {
-                case FetchReport _:
-                    if (this.tasks.TryRemove((task as FetchReport).DiscordUserId, out ScheduledTaskExecutor? taskExec))
+                case FetchReport fetch:
+                    ulong id;
+                    if (fetch.DiscordUserId != null)
+                    {
+                        id = fetch.DiscordUserId.Value;
+                    }
+                    else
+                    {
+                        id = fetch.ChannelId.Value;
+                    }
+
+                    if (this.tasks.TryRemove(id, out ScheduledTaskExecutor? taskExec))
                     {
                         taskExec.Dispose();
                     }
@@ -244,14 +254,26 @@ namespace Callouts.Data
                     retval = false;
                 }
             }
-            else
+            else if (texec.Job is FetchReport fetch)
             {
-                //Log.Debug("Attempting to register guild task {ReminderId} @ {ExecutionTime}", texec.Id, texec.Job.ExecutionTime);
-                if (!this.tasks.TryAdd((texec.Job as FetchReport).DiscordUserId, texec))
+                ulong id;
+                if (fetch.DiscordUserId != null)
                 {
-                    //Log.Warning("Guild task {Id} already exists in the collection for user {UserId}", texec.Id);
+                    id = fetch.DiscordUserId.Value;
+                }
+                else
+                {
+                    id = fetch.ChannelId.Value;
+                }
+
+                if (!this.tasks.TryAdd(id, texec))
+                {
                     retval = false;
                 }
+            }
+            else
+            {
+                //TODO:LOG?
             }
             return retval;
         }

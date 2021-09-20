@@ -52,6 +52,7 @@ namespace Callouts
             this.schedulingService = schedulingService;
             client.Ready += OnReady;
             client.ComponentInteractionCreated += ComponentInteractionCreatedCallback;
+            client.VoiceStateUpdated += OnVoiceStateUpdated;
         }
 
         /// <summary>
@@ -84,28 +85,48 @@ namespace Callouts
             }
         }
 
-        public async Task RequestReport(ulong userId, ulong? guildId=null, bool repeat=false)
+        /// <summary>
+        /// OnVoiceStateUpdated
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private async Task OnVoiceStateUpdated(DiscordClient sender, VoiceStateUpdateEventArgs e)
+        {
+            // If anyone enters a raid channel setup a repeating raid report request
+            // It's okay to do this multiple times.The scheduler throws away dupe channel requsts
+            // No need to stop on channel exit. The scheduled task will stop if channel is empty
+            if (e.Channel != null && e.Channel.Name.Contains("Raid"))
+            {
+                await RequestReport(null, e.Guild.Id, e.Channel.Id, true);
+            }
+        }
+
+        public async Task RequestReport(ulong? userId, ulong? guildId=null, ulong? channelId = null, bool repeat=false)
         {
             // check if user is registered.
-            if (await userManager.GetUserByUserId(userId) != null)
+            // TODO: Consider telling them to register?
+            // This could be a little better
+            if (userId != null && await userManager.GetUserByUserId(userId.Value) == null)
             {
-                DateTimeOffset executionTime = DateTimeOffset.Now;
-                int id = 0;
-                if (repeat)
-                {
-                    executionTime = executionTime.AddMinutes(5);
-                    id = -1;
-                }
-                FetchReport reportRequest = new()
-                {
-                    DiscordUserId = userId,
-                    GuildId = guildId,
-                    IsRepeating = repeat,
-                    ExecutionTime = executionTime,
-                    Id = id
-                };
-                schedulingService.ScheduleTask(reportRequest);
+                return;
             }
+
+            DateTimeOffset executionTime = DateTimeOffset.Now;
+            if (repeat)
+            {
+                executionTime = executionTime.AddMinutes(5);
+            }
+            FetchReport reportRequest = new()
+            {
+                DiscordUserId = userId,
+                GuildId = guildId,
+                IsRepeating = repeat,
+                ExecutionTime = executionTime,
+                ChannelId = channelId,
+                Id = 0
+            };
+            schedulingService.ScheduleTask(reportRequest);
         }
 
         /// <summary>
@@ -193,6 +214,12 @@ namespace Callouts
         {
             // TODO: Make this work for private messages. will have to rework how we setup the guild/channel.
             // Best way would probably be to extend message manager
+
+            if (await userManager.GetUserByUserId(discordUserId) == null)
+            {
+                return;
+            }
+
             string errorMessage = null;
             MemoryStream raidReportImage = null;
             DiscordGuild guild = await client.GetGuildAsync(guildId.Value);
@@ -357,7 +384,7 @@ namespace Callouts
                 {
                     ((IJavaScriptExecutor)webDriver)
                         .ExecuteScript("var element=arguments[0];element.parentNode.removeChild(element);",
-                                       webDriver.FindElementByClassName("jss1"));
+                                       webDriver.FindElementByXPath("/html/body/div/div/main/div/div[1]"));
                 }
                 catch (Exception) { }
 

@@ -134,7 +134,28 @@ namespace Callouts.Data
             FetchReport? fetch = _ as FetchReport ?? throw new InvalidCastException("Failed to cast scheduled task to FetchReport");
 
             ReportManager reportManager = serviceProvider.GetRequiredService<ReportManager>();
-            this.async.Execute(reportManager.GetReport(fetch.DiscordUserId, fetch.GuildId, fetch.filter));
+
+            // If a user ID is provided it is a one off request for a person
+            if (fetch.DiscordUserId != null)
+            {
+                this.async.Execute(reportManager.GetReport(fetch.DiscordUserId.Value, fetch.GuildId, fetch.Filter));
+            }
+            else
+            {
+                // Repeating channel watcher request
+                // Try and get a report for each user
+                DiscordGuild guild = this.async.Execute(client.GetGuildAsync(fetch.GuildId.Value));
+                DiscordChannel raidChannel = guild.GetChannel(fetch.ChannelId.Value);
+                foreach (DiscordMember member in raidChannel.Users)
+                {
+                    this.async.Execute(reportManager.GetReport(member.Id, fetch.GuildId, fetch.Filter));
+                }
+                // If everyone has lefts top the watcher
+                if (!raidChannel.Users.Any())
+                {
+                    fetch.IsRepeating = false;
+                }
+            }
 
             if (!fetch.IsRepeating)
             {

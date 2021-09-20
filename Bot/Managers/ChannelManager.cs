@@ -38,9 +38,9 @@ namespace Callouts
         /// <param name="guild"></param>
         /// <param name="channelName"></param>
         /// <returns></returns>
-        public async Task<DiscordChannel> GetChannel(DiscordGuild guild, string channelName)
+        public async Task<DiscordChannel> GetChannel(DiscordGuild guild, string channelName, ChannelType type=ChannelType.Text)
         {
-            var channel = (await guild.GetChannelsAsync()).FirstOrDefault(p => p.Name == channelName);
+            var channel = (await guild.GetChannelsAsync()).FirstOrDefault(p => p.Name == channelName && p.Type == type);
             if (channel == null)
             {
                 List<DiscordOverwriteBuilder> overwriteList = new()
@@ -48,7 +48,7 @@ namespace Callouts
                     new DiscordOverwriteBuilder(guild.EveryoneRole) { Allowed = Permissions.SendMessages | Permissions.AddReactions },
                     new DiscordOverwriteBuilder(guild.CurrentMember) { Allowed = Permissions.All }
                 };
-                channel = await guild.CreateTextChannelAsync(channelName, overwrites: overwriteList);
+                channel = await guild.CreateChannelAsync(channelName, type, overwrites: overwriteList);
             }
             return channel;
         }

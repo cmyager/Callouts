@@ -26,5 +26,7 @@ namespace Callouts
             // TODO
             // Uptime?
         }
+
+        // TODO: restart bot command
     }
 }

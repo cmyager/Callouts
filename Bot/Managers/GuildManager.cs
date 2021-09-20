@@ -97,5 +97,7 @@ namespace Callouts
         {
             await RemoveGuild(e.Guild.Id);
         }
+
+        // TODO: Clean commands channel function
     }
 }
