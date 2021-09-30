@@ -30,6 +30,7 @@ namespace Callouts
 
         // This is a possible todo.
         // TODO: If a user is in an event and they are no longer in the server the bot crashes
+        // on guild added could look through events/userevents for guild
         //public async Task RemoveOfflineUsers(DiscordClient sender, ReadyEventArgs e)
         //{
         //}

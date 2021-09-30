@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BungieSharper" Version="0.8.1" />
-    <PackageReference Include="BungieSharper.Entities" Version="0.8.1" />
+    <PackageReference Include="BungieSharper" Version="0.8.4" />
+    <PackageReference Include="BungieSharper.Entities" Version="0.8.4" />
     <PackageReference Include="DSharpPlus" Version="4.1.0" />
     <PackageReference Include="blazor-dragdrop" Version="2.3.0" />
     <PackageReference Include="Blazorise.Bootstrap" Version="0.9.4.2" />

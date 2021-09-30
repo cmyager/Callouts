@@ -42,6 +42,39 @@ namespace Callouts.Data
             return userData;
         }
 
+        public async Task<UserSearchResponse> SearchByGlobalNamePrefix(string globalname, int page=0)
+        {
+            UserSearchResponse searchData = new();
+            try
+            {
+                // TODO: make this get all of them
+                searchData = await Client.Api.User_SearchByGlobalNamePrefix(globalname, page);
+            }
+            catch (Exception) { }
+            return searchData;
+        }
+
+        public async Task<long?> GetBungieNetIdByBungieName(string bungieName, int bungieCode)
+        {
+            long? retval = null;
+            try
+            {
+                UserSearchResponse searchRetval = await SearchByGlobalNamePrefix(bungieName);
+                if (searchRetval.SearchResults != null)
+                {
+                    // User_SearchByGlobalNamePrefix doesn't accept the code so search for it here
+                    UserSearchResponseDetail userData = searchRetval.SearchResults
+                        .Where(p => p.BungieGlobalDisplayNameCode == bungieCode).FirstOrDefault();
+                    if (userData != null)
+                    {
+                        retval = userData.BungieNetMembershipId;
+                    }
+                }
+            }
+            catch (Exception) { }
+            return retval;
+        }
+
         public async Task<DestinyProfileResponse> GetProfile(long id, BungieMembershipType membershipType, IEnumerable<DestinyComponentType> components = null)
         {
             DestinyProfileResponse profile = null;

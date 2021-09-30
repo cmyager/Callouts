@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Blazorise;
 
+//TODO: Rename Register?
 namespace Callouts.Pages
 {
     [Authorize]
@@ -21,98 +22,104 @@ namespace Callouts.Pages
         NavigationManager NavigationManager { get; set; }
 
         [Inject]
-        UserManager userManager { get; set; }
+        UserManager UserManager { get; set; }
 
         [Inject]
-        BungieService bungieService { get; set; }
+        BungieService BungieService { get; set; }
 
         [Inject]
         AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
         [Inject]
-        UserService userService { get; set; }
+        UserService UserService { get; set; }
 
         private User DiscordUserInfo = null;
 
         //TODO: Remove my ID. Makes debugging easier for now
-        // TODO: REDO THIS to use the new bungie ID
-        private long userSubmitBungieId { get; set; } = 5396677;
-        private UserMembershipData bungieProfile { get; set; }
+        private string UserSubmitBungieDisplayName { get; set; } = "cmyager";
+        private string UserSubmitBungieDisplayNameCode { get; set; } = "8267";
+        private UserMembershipData BungieProfile { get; set; }
         private DestinyProfileResponse PrimaryCharacterProfile { get; set; }
 
         Alert AccountErrorAlert;
         Alert UnlinkAlert;
         Alert CharacterErrorAlert;
 
-
-
-
+        /// <summary>
+        /// OnInitializedAsync
+        /// </summary>
+        /// <returns></returns>
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var discUserClaim = userService.GetInfo(authState);
+            var discUserClaim = UserService.GetInfo(authState);
             if (discUserClaim != null)
             {
-                DiscordUserInfo = await userManager.GetUserByUserId(discUserClaim.UserId);
+                DiscordUserInfo = await UserManager.GetUserByUserId(discUserClaim.UserId);
                 if (DiscordUserInfo.BungieId != null)
                 {
-                    bungieProfile = await bungieService.GetUserById(DiscordUserInfo.BungieId.Value, BungieMembershipType.BungieNext);
+                    BungieProfile = await BungieService.GetUserById(DiscordUserInfo.BungieId.Value, BungieMembershipType.BungieNext);
                     await GetBungieProfile();
                 }
             }
         }
 
+        /// <summary>
+        /// GetBungieProfile
+        /// </summary>
+        /// <returns></returns>
         public async Task GetBungieProfile()
         {
             AccountErrorAlert.Hide();
             UnlinkAlert.Hide();
             CharacterErrorAlert.Hide();
 
-
-            if (bungieProfile == null)
+            if (BungieProfile == null && int.TryParse(UserSubmitBungieDisplayNameCode, out int userSubmitBungieDisplayNameCodeInt))
             {
-                bungieProfile = await bungieService.GetUserById(userSubmitBungieId, BungieMembershipType.BungieNext);
+                long? bungieNetId = await BungieService.GetBungieNetIdByBungieName(UserSubmitBungieDisplayName, userSubmitBungieDisplayNameCodeInt);
+                if (bungieNetId != null)
+                {
+                    BungieProfile = await BungieService.GetUserById(bungieNetId.Value, BungieMembershipType.BungieNext);
+                }
             }
 
-            if (bungieProfile == null)
+            if (BungieProfile == null)
             {
                 AccountErrorAlert.Show();
             }
-            else if (bungieProfile.DestinyMemberships == null || bungieProfile.DestinyMemberships.Count() == 0)
+            else if (BungieProfile.DestinyMemberships == null || BungieProfile.DestinyMemberships.Count() == 0)
             {
                 CharacterErrorAlert.Show();
             }
             else
             {
-                long primaryMembershipId = bungieProfile.PrimaryMembershipId.GetValueOrDefault();
+                long primaryMembershipId = BungieProfile.PrimaryMembershipId.GetValueOrDefault();
                 BungieMembershipType primaryMembershipType;
 
-                if (bungieProfile.PrimaryMembershipId == null)
+                if (BungieProfile.PrimaryMembershipId == null)
                 {
-                    primaryMembershipType = bungieProfile.DestinyMemberships.First().MembershipType;
+                    primaryMembershipType = BungieProfile.DestinyMemberships.First().MembershipType;
                 }
                 else
                 {
-                    primaryMembershipType = bungieProfile.DestinyMemberships.First(p => p.MembershipId == bungieProfile.PrimaryMembershipId).MembershipType;
+                    primaryMembershipType = BungieProfile.DestinyMemberships.First(p => p.MembershipId == BungieProfile.PrimaryMembershipId).MembershipType;
                 }
 
                 List<DestinyComponentType> Components = new() { DestinyComponentType.Characters };
 
-                PrimaryCharacterProfile = await bungieService.GetProfile(primaryMembershipId, primaryMembershipType, Components);
+                PrimaryCharacterProfile = await BungieService.GetProfile(primaryMembershipId, primaryMembershipType, Components);
                 if (PrimaryCharacterProfile == null)
                 {
                     CharacterErrorAlert.Show();
                 }
-                DiscordUserInfo = await userManager.SyncBungieProfile(DiscordUserInfo.UserId, bungieProfile, PrimaryCharacterProfile);
+                DiscordUserInfo = await UserManager.SyncBungieProfile(DiscordUserInfo.UserId, BungieProfile, PrimaryCharacterProfile);
             }
-
-
         }
 
         public async Task ClearBungieProfile()
         {
-            DiscordUserInfo = await userManager.ClearBungieProfile(DiscordUserInfo.UserId);
-            bungieProfile = null;
+            DiscordUserInfo = await UserManager.ClearBungieProfile(DiscordUserInfo.UserId);
+            BungieProfile = null;
             PrimaryCharacterProfile = null;
 
             AccountErrorAlert.Hide();
