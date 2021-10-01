@@ -1,0 +1,88 @@
+﻿@page "/event"
+
+<Alert @ref="EventAlert" Color="Color.Warning">
+    @ErrorMessage
+    <CloseButton />
+</Alert>
+
+@* TODO: Redo all of this *@
+<Row>
+    <Column>
+        <Card>
+            <CardHeader>
+                <CardTitle>Create an Event</CardTitle>
+            </CardHeader>
+            <CardBody>
+               <Field>
+                    <FieldLabel>Guild</FieldLabel>
+                    <FieldBody>
+                        <Select @bind-SelectedValue="@SelectedGuild" @onchange="GuildChanged" >
+                            @foreach (var guild in UserDiscordGuild)
+                            {
+                                <SelectItem Value="@guild.Id">
+                                    @guild.Name
+                                </SelectItem>
+                            }
+                        </Select>
+                    </FieldBody>
+                </Field>
+                <Field>
+                    <FieldLabel>Title</FieldLabel>
+                    <FieldBody>
+                        <TextEdit @bind-Text="@Title"/>
+                    </FieldBody>
+                </Field>
+                <Field>
+                    <FieldLabel>Description</FieldLabel>
+                    <FieldBody>
+                        <MemoEdit @bind-Text="@Description" Rows="3" Placeholder="Optional"/>
+                    </FieldBody>
+                </Field>
+                <Field>
+                    <FieldLabel>Event Date</FieldLabel>
+                    <FieldBody>
+                        <DateEdit @bind-Date="@Date"/>
+                    </FieldBody>
+                </Field>
+                <Field>
+                    <FieldLabel>Event Time in US/Central</FieldLabel>
+                    <FieldBody>
+                        <TimeEdit @bind-Time="@Time"/>
+                    </FieldBody>
+                </Field>
+                <Field>
+                    <FieldLabel>Max Attendees</FieldLabel>
+                    <FieldBody>
+                        <NumericEdit @bind-Value="@Attendees" Placeholder="Optonal"/>
+                    </FieldBody>
+                </Field>
+
+                @*  <Field>
+                    <FieldLabel>Invite Members (Optional)</FieldLabel>
+                    <FieldBody>
+                        <Select @bind-SelectedValues="@test">
+                            @foreach (var member in DiscordMembers)
+                            {
+                                <SelectItem Value="member.Id">
+                                    @member.DisplayName
+                                </SelectItem>
+                            }
+                        </Select>
+                    </FieldBody>
+                </Field>*@
+                <CardText>
+                    TODO: Invite Members is still a work in progress
+                </CardText>
+                <Button Color="Color.Primary" Clicked="CreateNewEvent">
+                    Create Event
+                </Button>
+            </CardBody>
+
+        </Card>
+    </Column>
+</Row>
+
+
+
+
+

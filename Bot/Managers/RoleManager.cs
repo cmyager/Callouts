@@ -79,6 +79,10 @@ namespace Callouts
                 {
                     await e.Guild.CreateRoleAsync(role.Name, role.Permissions, role.Color, role.Hoist, role.Mentionable);
                 }
+                else if (existingRole.Value.Name == AdminRoleName)
+                {
+                    // Skip messing with admin
+                }
                 else if (existingRole.Value.Permissions != role.Permissions)
                 {
                     await existingRole.Value.ModifyAsync(role.Name, role.Permissions, role.Color, role.Hoist, role.Mentionable);

@@ -1,7 +1,10 @@
 ﻿using Callouts.DataContext;
 using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,6 +99,33 @@ namespace Callouts
         private async Task RemoveDeletedGuild(DiscordClient sender, GuildDeleteEventArgs e)
         {
             await RemoveGuild(e.Guild.Id);
+        }
+
+
+        // TODO: These are for the web. Could move them to a service or extention thing?
+        public async Task<List<DiscordGuild>> GetGuildsFromUserId(ulong userId)
+        {
+            List<DiscordGuild> userGuilds = new();
+            foreach ((ulong _, DiscordGuild guild) in Client.Guilds)
+            {
+                if ((await guild.GetMemberAsync(userId)) != null)
+                {
+                    userGuilds.Add(guild);
+                }
+            }
+            userGuilds = userGuilds.OrderBy(p => p.Name).ToList();
+            return userGuilds;
+        }
+
+        public async Task<List<DiscordMember>> GetGuildMembersFromGuildId(ulong guildId)
+        {
+            List<DiscordMember> retval = new();
+
+            DiscordGuild guild = await Client.GetGuildAsync(guildId);
+            retval = (await guild.GetAllMembersAsync()).ToList();
+
+            retval = retval.OrderBy(p => p.DisplayName).ToList();
+            return retval;
         }
 
         // TODO: Clean commands channel function
