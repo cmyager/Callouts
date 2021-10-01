@@ -16,7 +16,8 @@
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.8" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.8">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.8">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 	  </PackageReference>
@@ -25,4 +26,7 @@
 	  <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
 	  <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="93.0.4577.6300" />
   </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Migrations\" />
+	</ItemGroup>
 </Project>

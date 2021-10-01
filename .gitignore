@@ -388,7 +388,6 @@ FodyWeavers.xsd
 *.sln.iml
 
 appsettings.json
-/Migrations
 /callouts.db
 /callouts.db-journal
 .vscode/settings.json
