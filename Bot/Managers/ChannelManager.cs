@@ -10,16 +10,18 @@ namespace Callouts
     public class ChannelManager
     {
         //private readonly DiscordClient Client;
-
-        private readonly List<string> RequiredChannels = new();
+        private static readonly string WelcomeChannelName = "welcome";
+        private readonly RoleManager RoleManager;
+        private readonly List<string> RequiredChannels = new() { WelcomeChannelName };
 
         /// <summary>
         /// ChannelManager
         /// </summary>
         /// <param name="client"></param>
-        public ChannelManager(DiscordClient client)
+        public ChannelManager(DiscordClient client, RoleManager roleManager)
         {
             //Client = client;
+            this.RoleManager = roleManager;
             client.GuildAvailable += CreateRequiredChannelsOnJoin;
             client.GuildCreated += CreateRequiredChannelsOnJoin;
         }
@@ -43,11 +45,14 @@ namespace Callouts
             var channel = (await guild.GetChannelsAsync()).FirstOrDefault(p => p.Name == channelName && p.Type == type);
             if (channel == null)
             {
-                List<DiscordOverwriteBuilder> overwriteList = new()
+                List<DiscordOverwriteBuilder> overwriteList = null;
+                if (channelName == WelcomeChannelName)
                 {
-                    new DiscordOverwriteBuilder(guild.EveryoneRole) { Allowed = Permissions.SendMessages | Permissions.AddReactions },
-                    new DiscordOverwriteBuilder(guild.CurrentMember) { Allowed = Permissions.All }
-                };
+                    overwriteList = new()
+                    {
+                        new DiscordOverwriteBuilder(guild.EveryoneRole) { Allowed = Permissions.AccessChannels | Permissions.ReadMessageHistory }
+                    };
+                }
                 channel = await guild.CreateChannelAsync(channelName, type, overwrites: overwriteList);
             }
             return channel;
@@ -63,7 +68,11 @@ namespace Callouts
         {
             foreach (string channelName in RequiredChannels)
             {
-                await GetChannel(e.Guild, channelName);
+                DiscordChannel channel = await GetChannel(e.Guild, channelName);
+                if (channelName == WelcomeChannelName)
+                {
+                    await RoleManager.PostWelcomeMessage(channel);
+                }
             }
         }
     }

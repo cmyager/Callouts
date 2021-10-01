@@ -41,7 +41,7 @@ namespace Callouts
         public bool IsPrivate = false;
         public ulong? GuildId = null;
         private DiscordChannel channel;
-        private DiscordMessage message = null;
+        //private DiscordMessage _message = null;
         private DiscordMember member = null;
 
         public MessageManager(CommandContext ctx)

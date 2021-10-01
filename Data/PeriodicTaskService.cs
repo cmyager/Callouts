@@ -9,6 +9,7 @@ namespace Callouts.Data
     {
         public IServiceProvider serviceProvider;
         private Timer CleanChannelsTimer { get; set; }
+        private Timer ClearGuestRolesTimer { get; set; }
         // TODO: Could have one to update the bungie.net manifest
 
         private async void CleanChannelCallback(object? _)
@@ -31,6 +32,11 @@ namespace Callouts.Data
                 // TODO: Bot commands channel
             }
         }
+        private async void ClearGuestRolesCallback(object? _)
+        {
+            RoleManager roleManager = serviceProvider.GetRequiredService<RoleManager>();
+            await roleManager.ClearGuestRolls();
+        }
 
         public PeriodicTaskService(IServiceProvider serviceProvider)
         {
@@ -38,7 +44,8 @@ namespace Callouts.Data
         }
         public void StartPeriodicTimers()
         {
-            this.CleanChannelsTimer = new Timer(CleanChannelCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(1));
+            CleanChannelsTimer = new Timer(CleanChannelCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(1));
+            ClearGuestRolesTimer = new Timer(ClearGuestRolesCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromDays(1));
         }
 
         public void Dispose()

@@ -18,10 +18,12 @@ namespace Callouts
     public class UserManager
     {
         private readonly IDbContextFactory<CalloutsContext> ContextFactory;
+        private readonly RoleManager RoleManager;
         //private readonly DiscordClient Client;
-        public UserManager(IDbContextFactory<CalloutsContext> contextFactory, DiscordClient client)
+        public UserManager(IDbContextFactory<CalloutsContext> contextFactory, RoleManager roleManager, DiscordClient client)
         {
             ContextFactory = contextFactory;
+            RoleManager = roleManager;
             //Client = client;
             //client.Ready += RemoveOfflineUsers;
             client.GuildMemberRemoved += RemoveGuildMemberRemoved;
@@ -138,6 +140,7 @@ namespace Callouts
             }
             context.Update(discordUser);
             await context.SaveChangesAsync();
+            await RoleManager.UpdateMemberRole(UserId);
             return discordUser;
         }
 
@@ -148,6 +151,7 @@ namespace Callouts
             discordUser.UnlinkBungieAccount();
             context.Update(discordUser);
             await context.SaveChangesAsync();
+            await RoleManager.UpdateMemberRole(UserId, delete: true);
             return discordUser;
         }
     }

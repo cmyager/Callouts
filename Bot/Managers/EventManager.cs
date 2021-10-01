@@ -502,7 +502,7 @@ namespace Callouts
                 var button = new DiscordLinkButtonComponent("https://theclanwithoutaplan.com", "https://theclanwithoutaplan.com");
                 builder.Content = "Visit the website to create an event.";
                 builder.AddComponents(new List<DiscordComponent>() { button });
-                _ = EventsChannel.SendMessageAsync(builder);
+                await (await EventsChannel.SendMessageAsync(builder)).PinAsync();
             }
         }
 

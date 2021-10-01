@@ -27,6 +27,7 @@ namespace Callouts
         public CommandsNextExtension Commands { get; set; }
         public DiscordClient Client { get; set; }
         private readonly GuildManager guildManager;
+        private readonly RoleManager roleManager;
         private readonly UserManager userManager;
         private readonly ChannelManager channelManager;
         private readonly BungieService bungieService;
@@ -41,6 +42,7 @@ namespace Callouts
 
         public BotService(DiscordClient client,
                           GuildManager guildManager,
+                          RoleManager roleManager,
                           UserManager userManager,
                           ChannelManager channelManager,
                           BungieService bungieService,
@@ -55,6 +57,7 @@ namespace Callouts
         {
             this.Client = client;
             this.guildManager = guildManager;
+            this.roleManager = roleManager;
             this.userManager = userManager;
             this.channelManager = channelManager;
             this.bungieService = bungieService;
@@ -87,6 +90,7 @@ namespace Callouts
             var services = new ServiceCollection();
             services.AddSingleton<DiscordClient>(Client);
             services.AddSingleton<GuildManager>(guildManager);
+            services.AddSingleton<RoleManager>(roleManager);
             services.AddSingleton<UserManager>(userManager);
             services.AddSingleton<ChannelManager>(channelManager);
             services.AddSingleton<BungieService>(bungieService);
