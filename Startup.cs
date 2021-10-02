@@ -66,7 +66,6 @@ namespace Callouts
 
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
 
             var bungiecfg = new BungieClientConfig
             {
