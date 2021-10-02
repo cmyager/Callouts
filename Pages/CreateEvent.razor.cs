@@ -35,7 +35,7 @@ namespace Callouts.Pages
         private string? Title;
         private string? Description;
         private DateTime Date;
-        private TimeSpan Time;//SET THESE IN ON INIT
+        private TimeSpan Time;
         private int? Attendees = null;
         private string? ErrorMessage = null;
 
@@ -47,10 +47,8 @@ namespace Callouts.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            TimeZoneInfo CST = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
-            DateTime newDT = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, CST);
-            Date = newDT.Date;
-            Time = newDT.TimeOfDay;
+            Date = DateTime.UtcNow.UtcToCst().Date;
+            Time = DateTime.UtcNow.UtcToCst().TimeOfDay;
 
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var discUserClaim = userService.GetInfo(authState);
@@ -79,8 +77,7 @@ namespace Callouts.Pages
             EventAlert.Hide();
             ErrorMessage = null;
 
-            TimeZoneInfo CST = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
-            DateTime UtcTime = TimeZoneInfo.ConvertTimeToUtc(Date.Add(Time), CST);
+            DateTime utcTime = Date.Add(Time).CstToUtc();
 
             if (SelectedGuild == null)
             {
@@ -90,9 +87,8 @@ namespace Callouts.Pages
             {
                 ErrorMessage = "Title Error";
             }
-            else if (UtcTime < DateTime.UtcNow)
+            else if (utcTime < DateTime.UtcNow)
             {
-                // TODO: Fix this to compare properly
                 ErrorMessage = "Date Error";
             }
             else if (Attendees != null && Attendees.Value < 0)
@@ -110,19 +106,14 @@ namespace Callouts.Pages
             }
             else
             {
-                //ulong guildID = 765038177605386240;
-
                 Event newEvent = new()
                 {
                     Title = Title,
                     Description = Description,
                     MaxMembers = Attendees,
-                    //Guild = guild,
                     GuildId = SelectedGuild.Id,
-                    //Guild = guild,
-                    //User = DiscordUserInfo,
                     UserId = DiscordUserInfo.UserId,
-                    StartTime = UtcTime
+                    StartTime = utcTime
                 };
                 await eventManager.AddEvent(newEvent);
                 ErrorMessage = "Event should have been created!";

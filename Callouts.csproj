@@ -21,12 +21,10 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 	  </PackageReference>
+    <PackageReference Include="NodaTime" Version="3.0.6" />
 	  <PackageReference Include="Scrutor" Version="3.3.0" />
 	  <PackageReference Include="Selenium.Support" Version="3.141.0" />
 	  <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
 	  <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="94.0.4606.6100" />
   </ItemGroup>
-	<ItemGroup>
-		<Folder Include="Migrations\" />
-	</ItemGroup>
 </Project>

@@ -1,14 +1,9 @@
-﻿using BungieSharper.Entities;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using System.Collections.Generic;
-using System.Linq;
 using System.Data;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 #nullable disable
 
@@ -58,9 +53,6 @@ namespace Callouts.DataContext
 
         [InverseProperty(nameof(UserEvent.Event))]
         public virtual ICollection<UserEvent> UserEvents { get; set; }
-
-        [NotMapped]
-        public DateTime CentralTime => TimeZoneInfo.ConvertTime(this.StartTime, TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time"));
 
         [NotMapped]
         public List<UserEvent> Accepted { get { return GetAccepted(); } }

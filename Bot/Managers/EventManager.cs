@@ -376,7 +376,7 @@ namespace Callouts
                 embed.Description = e.Description;
             }
 
-            embed.AddField("Time", $"{e.CentralTime.ToString("dddd MMM dd, yyyy @ hh:mm tt")} US/Central", false);
+            embed.AddField("Time", $"{e.StartTime.UtcToCst():dddd MMM dd, yyyy @ hh:mm tt} US/Central", false);
 
             string acceptedString = e.MaxMembers != null ? $"__Accepted({e.Accepted.Count}/{e.MaxMembers})__" : "__Accepted__";
             string declinedString = "__Declined__";
