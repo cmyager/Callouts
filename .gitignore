@@ -390,4 +390,4 @@ FodyWeavers.xsd
 appsettings.json
 /callouts.db
 /callouts.db-journal
-.vscode/settings.json
+.vscode/

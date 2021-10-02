@@ -1,4 +1,4 @@
-﻿using BungieSharper.Entities.Destiny;
+using BungieSharper.Entities.Destiny;
 using BungieSharper.Entities.Destiny.HistoricalStats.Definitions;
 using Callouts.Data;
 using Callouts.DataContext;
@@ -157,7 +157,7 @@ namespace Callouts
                     if (filter)
                     {
                         DateTime period = activity.Activities.ElementAt(0).Period;
-                        if ((DateTime.UtcNow - period).TotalDays > 1)
+                        if ((DateTime.UtcNow - period).TotalDays > 7)
                         {
                             instanceId = 0;
                         }
@@ -237,10 +237,10 @@ namespace Callouts
                 if (!messagesAttachments.Contains(RaidReportimageName))
                 {
                     // Get the raid report
+                    errorMessage = "Error getting the report";
                     raidReportImage = GetRaidReportFromWeb(recentRaidId);
                     if (raidReportImage == null)
                     {
-                        errorMessage = "Error getting the report";
                         throw new Exception();
                     }
                     // Add user mentions
