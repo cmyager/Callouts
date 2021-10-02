@@ -2,7 +2,6 @@
 
 ## Big TODOs
 
-* If you cancel on the discord login page an exception is raised.
 * Only consider people authenticated if they are in a server that the bot is in
 * Think about simplifying users to only have the primary account. Who doesn't have that these days?
 * add the idea of requiring users to auth-ed with the bot

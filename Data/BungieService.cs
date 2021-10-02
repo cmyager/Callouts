@@ -194,22 +194,25 @@ namespace Callouts.Data
             }
             private void BuildStats()
             {
-                TimePlayed = stats["secondsPlayed"].Basic.DisplayValue;
-                Kdr = stats["killsDeathsRatio"].Basic.DisplayValue;
-                Kda = stats["killsDeathsAssists"].Basic.DisplayValue;
-                BestWeapon = stats["weaponBestType"].Basic.DisplayValue;
-                GamesPlayed = stats["activitiesEntered"].Basic.DisplayValue;
-                BestSingleGameKills = stats["bestSingleGameKills"].Basic.DisplayValue;
-                LongestSpree = stats["longestKillSpree"].Basic.DisplayValue;
-                CombatRating = stats["combatRating"].Basic.DisplayValue;
-                Kills = stats["kills"].Basic.DisplayValue;
-                Assists = stats["assists"].Basic.DisplayValue;
-                Deaths = stats["deaths"].Basic.DisplayValue;
-                AverageLifeSpan = stats["averageLifespan"].Basic.DisplayValue;
-                LongestLife = stats["longestSingleLife"].Basic.DisplayValue;
-                LongestKillDistance = stats["longestKillDistance"].Basic.DisplayValue;
-                ActivitiesWon = stats["activitiesWon"].Basic.DisplayValue;
-                WinRate = $"{CalculateWinRate()}%";
+                if (stats != null)
+                {
+                    TimePlayed = stats["secondsPlayed"].Basic.DisplayValue;
+                    Kdr = stats["killsDeathsRatio"].Basic.DisplayValue;
+                    Kda = stats["killsDeathsAssists"].Basic.DisplayValue;
+                    BestWeapon = stats["weaponBestType"].Basic.DisplayValue;
+                    GamesPlayed = stats["activitiesEntered"].Basic.DisplayValue;
+                    BestSingleGameKills = stats["bestSingleGameKills"].Basic.DisplayValue;
+                    LongestSpree = stats["longestKillSpree"].Basic.DisplayValue;
+                    CombatRating = stats["combatRating"].Basic.DisplayValue;
+                    Kills = stats["kills"].Basic.DisplayValue;
+                    Assists = stats["assists"].Basic.DisplayValue;
+                    Deaths = stats["deaths"].Basic.DisplayValue;
+                    AverageLifeSpan = stats["averageLifespan"].Basic.DisplayValue;
+                    LongestLife = stats["longestSingleLife"].Basic.DisplayValue;
+                    LongestKillDistance = stats["longestKillDistance"].Basic.DisplayValue;
+                    ActivitiesWon = stats["activitiesWon"].Basic.DisplayValue;
+                    WinRate = $"{CalculateWinRate()}%";
+                }
             }
             private double CalculateWinRate()
             {

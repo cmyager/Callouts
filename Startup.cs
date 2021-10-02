@@ -62,6 +62,7 @@ namespace Callouts
                     x.AppSecret = Configuration["Discord:ClientSecret"];
                     x.SaveTokens = true;
                     x.Scope.Add("guilds");
+                    x.AccessDeniedPath = "/";
                 });
 
             services.AddRazorPages();
