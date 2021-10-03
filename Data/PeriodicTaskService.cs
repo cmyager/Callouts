@@ -10,7 +10,6 @@ namespace Callouts.Data
         public IServiceProvider serviceProvider;
         private Timer CleanChannelsTimer { get; set; }
         private Timer ClearGuestRolesTimer { get; set; }
-        // TODO: Could have one to update the bungie.net manifest
 
         private async void CleanChannelCallback(object? _)
         {
@@ -29,7 +28,7 @@ namespace Callouts.Data
                 // Clean reports Channel
                 await reportManager.CleanChannel(guild.Value);
 
-                // TODO: Bot commands channel
+                // Bot commands channel
             }
         }
         private async void ClearGuestRolesCallback(object? _)

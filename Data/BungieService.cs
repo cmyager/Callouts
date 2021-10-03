@@ -17,19 +17,19 @@ namespace Callouts.Data
     public class BungieService
     {
         private readonly BungieApiClient Client;
-        private DestinyManifest ManifestData;
+        //private DestinyManifest ManifestData;
 
         public BungieService(BungieClientConfig cfg)
         {
             Client = new BungieApiClient(cfg);
-            // This can run in the background
-            // TODO: Some sort of periodic to update this
-            _ = UpdateManifest();
+
+            // Could have a periodic to update the bungie.net manifest
+            //_ = UpdateManifest();
         }
-        public async Task UpdateManifest()
-        {
-            ManifestData = await Client.Api.Destiny2_GetDestinyManifest();
-        }
+        //public async Task UpdateManifest()
+        //{
+        //    ManifestData = await Client.Api.Destiny2_GetDestinyManifest();
+        //}
 
         public async Task<UserMembershipData> GetUserById(long id, BungieMembershipType membershipType)
         {
@@ -47,7 +47,7 @@ namespace Callouts.Data
             UserSearchResponse searchData = new();
             try
             {
-                // TODO: make this get all of them
+                // remove
                 searchData = await Client.Api.User_SearchByGlobalNamePrefix(globalname, page);
             }
             catch (Exception) { }
@@ -56,6 +56,7 @@ namespace Callouts.Data
 
         public async Task<long?> GetBungieNetIdByBungieName(string bungieName, int bungieCode)
         {
+            // remove
             long? retval = null;
             try
             {
@@ -75,7 +76,46 @@ namespace Callouts.Data
             return retval;
         }
 
-        public async Task<DestinyProfileResponse> GetProfile(long id, BungieMembershipType membershipType, IEnumerable<DestinyComponentType> components = null)
+        public async Task<IEnumerable<UserInfoCard>> Destiny2_SearchDestinyPlayer(string uniqueName,
+            BungieMembershipType membershipType=BungieMembershipType.All)
+        {
+            IEnumerable<UserInfoCard> retval = null;
+            try
+            {
+                retval = await Client.Api.Destiny2_SearchDestinyPlayer(uniqueName, membershipType);
+            }
+            catch (Exception) { }
+            return retval;
+        }
+
+        public async Task<UserInfoCard> GetPrimaryDestinyAccountFromUniqueName(string uniqueName,
+            BungieMembershipType membershipType=BungieMembershipType.All)
+        {
+            UserInfoCard retval = null;
+            try
+            {
+                IEnumerable<UserInfoCard> platforms = await Destiny2_SearchDestinyPlayer(uniqueName, membershipType);
+                if (platforms == null || !platforms.Any())
+                {
+
+                }
+                if (platforms.Count() == 1)
+                {
+                    retval = platforms.First();
+                }
+                else
+                {
+                    retval = platforms.Where(p => p.CrossSaveOverride == p.MembershipType).FirstOrDefault();
+                }
+
+            }
+            catch (Exception) { }
+
+            return retval;
+        }
+
+        public async Task<DestinyProfileResponse> GetProfile(long id, BungieMembershipType membershipType,
+            IEnumerable<DestinyComponentType> components = null)
         {
             DestinyProfileResponse profile = null;
             try
@@ -163,8 +203,7 @@ namespace Callouts.Data
             return report;
         }
 
-        // TODO: Figure out a better place for these. I want to use them in both the web and bot
-        // TODO: Might need to store user and type in these to make then useful for the web?
+        // Might need to store user and type in these to make then useful for the web?
         public class PvPStats
         {
             public string TimePlayed = "-";
@@ -183,7 +222,6 @@ namespace Callouts.Data
             public string LongestLife = "-";
             public string LongestKillDistance = "-";
             public string ActivitiesWon = "-";
-            // TODO: Could find 2 more stats to fill out the embed row
 
             private Dictionary<string, DestinyHistoricalStatsValue> stats;
 

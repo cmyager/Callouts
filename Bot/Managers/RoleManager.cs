@@ -43,7 +43,6 @@ namespace Callouts
         public RoleManager(DiscordClient client)
         {
             Client = client;
-            // TODO: Go over these with the clan
             Roles.Add(new Role(AdminRoleName, DiscordColor.Green, Permissions.Administrator));
             Roles.Add(new Role(MemberRoleName, DiscordColor.DarkRed, Permissions.ChangeNickname
                                                                      | Permissions.AccessChannels

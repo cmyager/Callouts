@@ -26,14 +26,14 @@ namespace Callouts.DataContext
         [Column("guild_id")]
         public ulong GuildId { get; set; }
 
-        // TODO: Add ability to change server prefix?
+        // Add ability to change server prefix?
         [Column("prefix")]
         public string Prefix { get; set; } = "!";
 
         [Column("clear_spam")]
         public bool ClearSpam { get; set; } = true;
 
-        // TODO: Add event create / delete roles
+        // Add event create / delete roles?
         // [Column("event_role_id")]
         // public ulong? EventRoleId { get; set; }
 

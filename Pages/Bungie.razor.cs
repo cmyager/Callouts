@@ -12,7 +12,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Blazorise;
 
-//TODO: Rename Register?
 namespace Callouts.Pages
 {
     [Authorize]
@@ -35,7 +34,7 @@ namespace Callouts.Pages
 
         private User DiscordUserInfo = null;
 
-        //TODO: Remove my ID. Makes debugging easier for now
+        // Remove my ID. Makes debugging easier for now
         private string UserSubmitBungieDisplayName { get; set; } = "cmyager";
         private string UserSubmitBungieDisplayNameCode { get; set; } = "8267";
         private UserMembershipData BungieProfile { get; set; }
@@ -51,15 +50,18 @@ namespace Callouts.Pages
         /// <returns></returns>
         protected override async Task OnInitializedAsync()
         {
+            // Make sure the user is authenticated
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var discUserClaim = UserService.GetInfo(authState);
             if (discUserClaim != null)
             {
+                // Check if the user has a linked bungie account already
                 DiscordUserInfo = await UserManager.GetUserByUserId(discUserClaim.UserId);
                 if (DiscordUserInfo.BungieId != null)
                 {
+                    // If they do fetch the characters
                     BungieProfile = await BungieService.GetUserById(DiscordUserInfo.BungieId.Value, BungieMembershipType.BungieNext);
-                    await GetBungieProfile();
+                    await GetCharacters();
                 }
             }
         }
@@ -74,12 +76,13 @@ namespace Callouts.Pages
             UnlinkAlert.Hide();
             CharacterErrorAlert.Hide();
 
-            if (BungieProfile == null && int.TryParse(UserSubmitBungieDisplayNameCode, out int userSubmitBungieDisplayNameCodeInt))
+            if (BungieProfile == null && int.TryParse(UserSubmitBungieDisplayNameCode, out int _))
             {
-                long? bungieNetId = await BungieService.GetBungieNetIdByBungieName(UserSubmitBungieDisplayName, userSubmitBungieDisplayNameCodeInt);
-                if (bungieNetId != null)
+                string uniqueName = $"{UserSubmitBungieDisplayName}#{UserSubmitBungieDisplayNameCode}";
+                UserInfoCard userInfo = await BungieService.GetPrimaryDestinyAccountFromUniqueName(uniqueName);
+                if (userInfo != null)
                 {
-                    BungieProfile = await BungieService.GetUserById(bungieNetId.Value, BungieMembershipType.BungieNext);
+                    BungieProfile = await BungieService.GetUserById(userInfo.MembershipId, userInfo.MembershipType);
                 }
             }
 
@@ -87,33 +90,42 @@ namespace Callouts.Pages
             {
                 AccountErrorAlert.Show();
             }
-            else if (BungieProfile.DestinyMemberships == null || BungieProfile.DestinyMemberships.Count() == 0)
+            else if (BungieProfile.DestinyMemberships == null || !BungieProfile.DestinyMemberships.Any())
             {
                 CharacterErrorAlert.Show();
             }
             else
             {
-                long primaryMembershipId = BungieProfile.PrimaryMembershipId.GetValueOrDefault();
-                BungieMembershipType primaryMembershipType;
-
-                if (BungieProfile.PrimaryMembershipId == null)
-                {
-                    primaryMembershipType = BungieProfile.DestinyMemberships.First().MembershipType;
-                }
-                else
-                {
-                    primaryMembershipType = BungieProfile.DestinyMemberships.First(p => p.MembershipId == BungieProfile.PrimaryMembershipId).MembershipType;
-                }
-
-                List<DestinyComponentType> Components = new() { DestinyComponentType.Characters };
-
-                PrimaryCharacterProfile = await BungieService.GetProfile(primaryMembershipId, primaryMembershipType, Components);
-                if (PrimaryCharacterProfile == null)
-                {
-                    CharacterErrorAlert.Show();
-                }
-                DiscordUserInfo = await UserManager.SyncBungieProfile(DiscordUserInfo.UserId, BungieProfile, PrimaryCharacterProfile);
+                await GetCharacters();
             }
+        }
+
+        /// <summary>
+        /// GetCharacters
+        /// </summary>
+        /// <returns></returns>
+        public async Task GetCharacters()
+        {
+            long primaryMembershipId = BungieProfile.PrimaryMembershipId.GetValueOrDefault();
+            BungieMembershipType primaryMembershipType;
+
+            if (BungieProfile.PrimaryMembershipId == null)
+            {
+                primaryMembershipType = BungieProfile.DestinyMemberships.First().MembershipType;
+            }
+            else
+            {
+                primaryMembershipType = BungieProfile.DestinyMemberships.First(p => p.MembershipId == BungieProfile.PrimaryMembershipId).MembershipType;
+            }
+
+            List<DestinyComponentType> Components = new() { DestinyComponentType.Characters };
+
+            PrimaryCharacterProfile = await BungieService.GetProfile(primaryMembershipId, primaryMembershipType, Components);
+            if (PrimaryCharacterProfile == null)
+            {
+                CharacterErrorAlert.Show();
+            }
+            DiscordUserInfo = await UserManager.SyncBungieProfile(DiscordUserInfo.UserId, BungieProfile, PrimaryCharacterProfile);
         }
 
         public async Task ClearBungieProfile()

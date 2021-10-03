@@ -11,7 +11,6 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-// TODO: only allow authentication for people that are in a guild
 namespace Callouts.Data
 {
     public class UserService

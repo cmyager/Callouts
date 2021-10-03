@@ -17,7 +17,7 @@ namespace Callouts.Data
         public int Id => this.Job.Id;
         public ScheduledTask Job { get; }
 
-        public delegate Task TaskExecuted(ScheduledTask task, bool force);
+        public delegate Task TaskExecuted(ScheduledTask task);
         public event TaskExecuted OnTaskExecuted;
 
         private readonly DiscordClient client;
@@ -38,7 +38,7 @@ namespace Callouts.Data
             this.async = async;
             this.Job = task;
             this.serviceProvider = serviceProvider;
-            this.OnTaskExecuted += (task, _) => Task.CompletedTask;
+            this.OnTaskExecuted += (task) => Task.CompletedTask;
         }
 
         /// <summary>
@@ -88,7 +88,6 @@ namespace Callouts.Data
             }
             catch (Exception)
             {
-                // TODO: Figure out logging
                 //Log.Debug(e, "Error while handling missed saved task");
             }
             return Task.CompletedTask;
@@ -100,7 +99,6 @@ namespace Callouts.Data
         /// <param name="_"></param>
         private void SendReminderCallback(object? _)
         {
-            // TODO: It might be useful to remove the old buttons from the previous reminders
             callbackCount += 1;
             Reminder? rem = _ as Reminder ?? throw new InvalidCastException("Failed to cast scheduled task to Reminder");
             EventManager eventManager = serviceProvider.GetRequiredService<EventManager>();
@@ -121,7 +119,7 @@ namespace Callouts.Data
             }
             if (callbackCount >= 5)
             {
-                this.async.Execute(this.OnTaskExecuted(this.Job, false));
+                this.async.Execute(this.OnTaskExecuted(this.Job));
             }
         }
 
@@ -159,7 +157,7 @@ namespace Callouts.Data
 
             if (!fetch.IsRepeating)
             {
-                this.async.Execute(this.OnTaskExecuted(this.Job, false));
+                this.async.Execute(this.OnTaskExecuted(this.Job));
             }
         }
     }

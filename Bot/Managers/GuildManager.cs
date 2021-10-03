@@ -102,7 +102,7 @@ namespace Callouts
         }
 
 
-        // TODO: These are for the web. Could move them to a service or extention thing?
+        // These are for the web. Could move them to a service or extention thing?
         public async Task<List<DiscordGuild>> GetGuildsFromUserId(ulong userId)
         {
             List<DiscordGuild> userGuilds = new();
@@ -128,6 +128,5 @@ namespace Callouts
             return retval;
         }
 
-        // TODO: Clean commands channel function
     }
 }

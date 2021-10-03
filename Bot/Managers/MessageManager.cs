@@ -29,8 +29,7 @@ using BungieSharper.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
-// TODO: Different constructors that can take ctx, message, user
-// is_private_channel function
+// Could use Different constructors that can take ctx, message, user is_private_channel function
 namespace Callouts
 {
     public class MessageManager : IDisposable
@@ -130,19 +129,5 @@ namespace Callouts
                 return await member.SendMessageAsync(builder);
             }
         }
-
-
-
-
-
-
-        //public async Task<DiscordMessage> SendRegistrationMessage()
-        //{
-        //    //if (Ctx.Guild.GetMemberAsync()
-        //}
-
-        // TODO: If needed convert the other methods
-        // - get_next_message
-        // - get_next_private_message
     }
 }

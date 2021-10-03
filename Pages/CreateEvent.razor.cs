@@ -12,8 +12,6 @@ using System.Threading.Tasks;
 
 namespace Callouts.Pages
 {
-    // TODO: Probably rename this page. TOo many things called event
-    // TODO: Cleanup. This is a mess since I just copied it from bungie
     [Authorize]
     public partial class CreateEvent : ComponentBase
     {

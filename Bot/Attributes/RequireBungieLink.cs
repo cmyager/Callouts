@@ -17,6 +17,7 @@ namespace Callouts.Attributes
             if (user.BungieId == null)
             {
                 using var messageManager = new MessageManager(ctx);
+                // add button to the clan website
                 await messageManager.SendPrivateMessage("You must have a linked Bungie.net account to use that command.");
                 retval = false;
             }

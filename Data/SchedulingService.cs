@@ -81,22 +81,17 @@ namespace Callouts.Data
             using var context = ContextFactory.CreateDbContext();
 
             var UpcomingEvents = await context.Events.AsQueryable()
-                //.Include(p => p.Guild)
                 .Where(t => t.StartTime <= DateTime.UtcNow.AddMinutes(70))
                 .ToListAsync();
 
             // If there is a reminder task and the event is old remove it
             foreach ((int eventId, ScheduledTaskExecutor texec) in this.reminders)
             {
-                // TODO: Test this. It might not be needed if the on complete task thing works
                 if ((texec.Job as Reminder).EventTime < DateTime.UtcNow)
                 {
-                    await UnscheduleTask(reminders[eventId].Job, true);
+                    await UnscheduleTask(reminders[eventId].Job);
                 }
             }
-            // TODO Consider: Remove reminders if all people are confirmed?
-            // TODO: Remove reminders for events that were deleted?
-
             foreach (Event upcomingEvent in UpcomingEvents)
             {
                 if (!reminders.ContainsKey(upcomingEvent.EventId) && (DateTime.UtcNow - upcomingEvent.StartTime).TotalSeconds < 0)
@@ -155,10 +150,8 @@ namespace Callouts.Data
         /// UnscheduleTask
         /// </summary>
         /// <param name="task"></param>
-        /// <param name="force"></param>
         /// <returns></returns>
-        //TODO: Is force needed?
-        public Task UnscheduleTask(ScheduledTask task, bool force = false)
+        public Task UnscheduleTask(ScheduledTask task)
         {
             switch (task)
             {
@@ -273,7 +266,7 @@ namespace Callouts.Data
             }
             else
             {
-                //TODO:LOG?
+                // LOGGING?
             }
             return retval;
         }

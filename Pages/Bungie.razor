@@ -1,4 +1,4 @@
-﻿@page "/bungie"
+@page "/bungie"
 
 <Alert @ref="AccountErrorAlert" Color="Color.Warning">
     No Bungie.net account found with that ID
@@ -29,11 +29,10 @@
                     <AddonLabel>#</AddonLabel>
                     </Addon>
                     <Addon AddonType="AddonType.Body">
-                        @* TODO: Validate the fields might need to make this one just bind and use an on change to validate it *@
                         <TextEdit @bind-Text="@UserSubmitBungieDisplayNameCode"/>
                     </Addon>
                     <Addon AddonType="AddonType.End">
-                        @* TODO: disable button unless both fields are valid? *@
+                        @* disable button unless both fields are valid? *@
                         <Button Color="Color.Primary" Clicked="GetBungieProfile">Link</Button>
                     </Addon>
                 </Addons>
@@ -46,7 +45,7 @@ else
     <Card>
         <CardBody>
             <CardText>
-                TODO: Future version will have emblems and stuff
+                Future version will have emblems and stuff
             </CardText>
             <Button Clicked="ClearBungieProfile" Color="Color.Danger">Unlink Bungie.net Profile</Button>
         </CardBody>

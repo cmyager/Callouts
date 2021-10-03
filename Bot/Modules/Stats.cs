@@ -29,13 +29,6 @@ using BungieSharper.Entities;
 using System.ComponentModel.DataAnnotations;
 using Callouts.Attributes;
 
-
-// TODO: Other stats like
-// - Rumble
-// - Doubles
-// - Scorched
-// - Mayhem
-
 namespace Callouts
 {
     [Group("stats"), Description("Display various Destiny 2 stats"), RequireBungieLink()]
@@ -69,21 +62,8 @@ namespace Callouts
         public async Task BaseStats(CommandContext ctx)
         {
             await ctx.RespondAsync("Not specified");
-            // TODO
-            // OLD HELP
-            //Display various Destiny 2 stats
-            //!stats pve
-            //Display PvE stats across all characters on your account
-            //!stats trials
-            //Display Trials stats across all characters on your account
-            //!stats ib
-            //Display Iron Banner stats across all characters on your account
-            //!stats pvp
-            //Display PvP stats across all characters on your account
-            //Use!help[command] for more info on a command
-
         }
-        //TODO: Could make these all 1 function with args
+
         [Command("pve"), Description("Display PvE stats across all characters on your account")]
         public async Task StatsPve(CommandContext ctx)
         {
@@ -138,10 +118,6 @@ namespace Callouts
             BungieService.PvPStats pvpStats = new BungieService.PvPStats(historicalStats["ironBanner"].AllTime);
             await messageManager.SendMessage(GeneratePvPStatsEmbed(pvpStats, discordUser, "Iron Banner Stats"));
         }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        // TODO: There is probably a better way to deal with embeds in general that isn't so hard coded: Automapper?
-        /////////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Created discord embed from PvPStats

@@ -6,7 +6,6 @@ namespace Callouts
 {
     internal static class Extentions
     {
-        // TODO: Could probably combine these by passing in current and destination timezone or something
         public static DateTime UtcToCst(this DateTime dateTime)
         {
             // Convert the time to a NodaTime Instant

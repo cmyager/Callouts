@@ -30,8 +30,7 @@ namespace Callouts
             //client.GuildMemberAdded += AddGuildMember;
         }
 
-        // This is a possible todo.
-        // TODO: If a user is in an event and they are no longer in the server the bot crashes
+        // If a user is in an event and they are no longer in the server the bot crashes
         // on guild added could look through events/userevents for guild
         //public async Task RemoveOfflineUsers(DiscordClient sender, ReadyEventArgs e)
         //{
@@ -127,7 +126,7 @@ namespace Callouts
             using var context = ContextFactory.CreateDbContext();
             var discordUser = await GetUserByUserId(UserId);
             discordUser.BungieId = bungieMembership.BungieNetUser.MembershipId;
-            discordUser.BungieName = bungieMembership.BungieNetUser.DisplayName;
+            discordUser.BungieName = bungieMembership.BungieNetUser.UniqueName;
 
             foreach (var membership in bungieMembership.DestinyMemberships)
             {

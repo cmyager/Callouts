@@ -34,8 +34,7 @@ namespace Callouts.DataContext
         [Column("description")]
         public string Description { get; set; }
 
-        // TODO: restrict this to positive? or null
-        // incase you want to allow creating an event no limit
+        // restrict this to positive? or null incase you want to allow creating an event no limit
         [Column("max_members")]
         public int? MaxMembers { get; set; }
 
@@ -60,11 +59,6 @@ namespace Callouts.DataContext
         [NotMapped]
         public List<UserEvent> Standby { get { return GetStandby(); } }
 
-        // TODO DEF consider: this setup made getting standby for reminders weird.
-        // Could just do a get(UserEventAttending) and sort by last update
-
-        // TODO Consider: These could be removed and this could just be done by sorting by last update
-        // It would simplify the event creation a bit I imagine, but this makes it readable
         [NotMapped]
         public List<UserEvent> Declined
             => this.UserEvents

@@ -23,10 +23,6 @@ namespace Callouts
         [Command("About"), Description("About")]
         public async Task About(CommandContext ctx)
         {
-            // TODO
-            // Uptime?
         }
-
-        // TODO: restart bot command
     }
 }

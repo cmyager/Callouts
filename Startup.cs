@@ -38,11 +38,12 @@ namespace Callouts
             var path = Environment.GetFolderPath(folder);
             var dbPath = $"{path}{Path.DirectorySeparatorChar}callouts.db";
 
-            // TODO: Remove this later on once it is closer to done
+            // Remove this later on once it is closer to done
             dbPath = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}callouts.db";
             Console.WriteLine($"DbPath is {dbPath}");
 
-            services.AddDbContextFactory<CalloutsContext>(options => options.UseSqlite($"Data Source={dbPath}"));
+            services.AddDbContextFactory<CalloutsContext>(options => options.UseSqlite($"Data Source={dbPath}",
+                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -85,7 +86,6 @@ namespace Callouts
                 Intents = DiscordIntents.All
             };
 
-            // TODO: the cool way of registering things by their type instead of manually.
             services.AddSingleton(s => new DiscordClient(cfg));
             services.AddSingleton(s => new BungieService(bungiecfg));
             services.AddSingleton<AsyncExecutionService>();
@@ -98,7 +98,6 @@ namespace Callouts
             services.AddSingleton<EventManager>();
             services.AddSingleton<ReportManager>();
             services.AddSingleton<PeriodicTaskService>();
-            // TODO: Add more singletons here
 
             services.AddHttpContextAccessor();
             services.AddBlazorDragDrop();

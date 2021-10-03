@@ -16,7 +16,6 @@ using OpenQA.Selenium.Support.UI;
 using System.Drawing;
 using OpenQA.Selenium.Chrome;
 
-// TODO: Voice state thing
 namespace Callouts
 {
     public class ReportManager
@@ -105,7 +104,7 @@ namespace Callouts
         public async Task RequestReport(ulong? userId, ulong? guildId=null, ulong? channelId = null, bool repeat=false)
         {
             // check if user is registered.
-            // TODO: Consider telling them to register?
+            // Consider telling them to register?
             // This could be a little better
             if (userId != null && await userManager.GetUserByUserId(userId.Value) == null)
             {
@@ -212,7 +211,7 @@ namespace Callouts
         /// <returns></returns>
         public async Task GetReport(ulong discordUserId, ulong? guildId, bool filter)
         {
-            // TODO: Make this work for private messages. will have to rework how we setup the guild/channel.
+            // Make this work for private messages. will have to rework how we setup the guild/channel.
             // Best way would probably be to extend message manager
 
             if (await userManager.GetUserByUserId(discordUserId) == null)
@@ -358,7 +357,6 @@ namespace Callouts
                 webDriver.Manage().Window.Size = new Size(1024, 768);
 
                 // The waits seem to hate me so sleep for 2 seconds to let everything load.
-                // TODO: Fix this. sleep is bad
                 System.Threading.Thread.Sleep(2000);
 
                 // Wait till the table isloaded
@@ -391,9 +389,6 @@ namespace Callouts
                 // get the report
                 byte[] image = ((ITakesScreenshot)webDriver.FindElement(By.ClassName("side-container"))).GetScreenshot().AsByteArray;
                 retval = new MemoryStream(image);
-
-                // TODO: Remove this. it saves the report for debugging purposes
-                //((ITakesScreenshot)webDriver.FindElement(By.ClassName("side-container"))).GetScreenshot().SaveAsFile($"{recentRaidId}.png");
             }
             catch (Exception) { }
             finally

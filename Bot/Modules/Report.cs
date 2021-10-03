@@ -54,7 +54,6 @@ namespace Callouts
             this.reportManager = reportManager;
             this.bungieService = bungieService;
             this.userManager = userManager;
-            // TODO: Register on voice state change command when are ready for listeners
         }
 
         [Command("report"), Description("Posts your most recent raid report.")]
@@ -63,7 +62,6 @@ namespace Callouts
             using var messageManager = new MessageManager(ctx);
             if (messageManager.IsPrivate)
             {
-                // TODO: Make it work in private channel
                 _ = messageManager.SendMessage("Sorry this doesn't work in private messages yet.");
             }
             else

@@ -14,7 +14,6 @@ using DSharpPlus.Entities;
 using System.Collections.Generic;
 using System;
 
-// TODO: Break this out into EventManager and UserEventManager?
 namespace Callouts
 {
     public class EventManager
@@ -97,7 +96,6 @@ namespace Callouts
         /// <returns></returns>
         public async Task ComponentInteractionCreatedCallback(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
-            // TODO: This can probably be simplified since both cases do pretty much the same actions
             // Only ack if it is an event button
             if (e.Interaction.Data.CustomId.Contains(EventDeliminator))
             {
@@ -183,11 +181,11 @@ namespace Callouts
         /// <returns></returns>
         public async Task<DiscordMessage> GetEventMessage(Event associatedEvent)
         {
-            // TODO: This can slow down the process quite a bit.
+            // Call to ListEvents in here can slow down the bot quite a bit. Consider remove/rething
             DiscordGuild guild = await client.GetGuildAsync(associatedEvent.GuildId);
             var EventsChannel = await channelManager.GetChannel(guild, EventChannelName);
             DiscordMessage foundMessage = null;
-            //await ListEvents(guild); // TODO: This slows it down real bad
+            //await ListEvents(guild);
 
             foreach (DiscordMessage message in (await EventsChannel.GetMessagesAsync(50)))
             {
@@ -254,7 +252,8 @@ namespace Callouts
                 var messagewithembed = await CreateEventMessage(associatedEvent);
                 if (discordMessage == null)
                 {
-                    discordMessage = await GetEventMessage(associatedEvent);  // TODO: This slows it down real bad
+                    // This slows it down quite a bit. Should not get called often
+                    discordMessage = await GetEventMessage(associatedEvent);
                 }
                 await discordMessage.ModifyAsync(messagewithembed.Embed);
                 _ = ListEvents(await client.GetGuildAsync(associatedEvent.GuildId));
@@ -342,7 +341,7 @@ namespace Callouts
                 var checkmarkEmoji = new DiscordComponentEmoji(DiscordEmoji.FromName(client, ":white_check_mark:"));
                 List<DiscordButtonComponent> buttons = new List<DiscordButtonComponent>
                 {
-                    // TODO: Think about the button ID structure. Attempts is not really needed
+                    // Think about the button ID structure. Attempts is not really needed
                     new DiscordButtonComponent(ButtonStyle.Primary, $"{userEvent.UserEventId}{EventReminderDeliminator}{userEvent.Attempts}", null, false, checkmarkEmoji),
                 };
                 message.Content = "";
@@ -546,7 +545,6 @@ namespace Callouts
         /// <returns></returns>
         public async Task<Event> AddEvent(Event newEvent)
         {
-            // TODO: Some reporting back to the web about this if it fails? Like return null?
             using var context = contextFactory.CreateDbContext();
             var eventInfo = await context.Events.AsQueryable()
                 .FirstOrDefaultAsync(p => p.GuildId == newEvent.GuildId && p.Title == newEvent.Title,
@@ -554,7 +552,7 @@ namespace Callouts
             if (eventInfo == null)
             {
                 context.Add(newEvent);
-                // TODO: Add RSVP people here
+                // Add RSVP people here
                 await context.SaveChangesAsync();
                 _ = ListEvents(await client.GetGuildAsync(newEvent.GuildId));
             }
