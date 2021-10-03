@@ -1,8 +1,7 @@
-﻿using Callouts.DataContext;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.EventArgs;
+using DSharpPlus.Entities;
 using System.Threading.Tasks;
 
 namespace Callouts
@@ -23,6 +22,13 @@ namespace Callouts
         [Command("About"), Description("About")]
         public async Task About(CommandContext ctx)
         {
+            var embed = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Blue,
+                Title = "Callouts",
+                Footer = new DiscordEmbedBuilder.EmbedFooter() { Text = "Made with DSharpPlus" },
+            };
+            await ctx.Channel.SendMessageAsync(embed);
         }
     }
 }
