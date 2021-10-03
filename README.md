@@ -1,31 +1,40 @@
 ﻿# Callouts
 
-## Big TODOs
 
-* Logging: Add more debug logging in lots of places. It is currently commented out
+## TODO: Feature
+
+### Major
+
+* !raid command
 * DM Reports: Allow a user to request a raid report in a private channel. This worked in my old python version
 * Redo Create Event Page: make it pretty / add Event RSVP
 * Fix Roles: I need to figure out more of how this works before turning it on.
-* Events Exception: Events Created by removed users while bot is offline causes it to crash
-* Documentation/Comments throughout
-* !raid command
-* proper build/deploy steps to create/update DB and all that jazz
 
-## Small TODOs
+### Minor
 
 * Web Login: Only complete web login if they are in a clan that they bot is in
 * callouts.db needs a permanent location (Startup.cs)
-* Add text to Index Page
-* Remove old accept buttons from DM event reminders (SendReminderCallback)
-* !about command (Core.cs)
 * !restart command (Core.cs)
+* !about command (Core.cs)
+* Remove old accept buttons from DM event reminders (SendReminderCallback)
+* Rethink !stats command. It could probably be simplified and thus more extensible (Stats.cs)
+* Robust !help commands throughout
+* Clean channel for bot-commands and periodic task for it
+* add url button to the clan website in RequireBungieLink.cs
+
+## TODO: Bugs
+
+* Events Exception: Events Created by removed users while bot is offline causes it to crash
 * !stats command called without subcommand (Stats.cs)
-* Rething !stats command. It could probably be simplified and thus more extensible (Stats.cs)
-* Robust help commands throughout
-* Clean channel command for bot-commands and periodic task for it
+
+## TODO: QOL
+
+* Documentation/Comments throughout
+* proper build/deploy steps to create/update DB and all that jazz
+* Logging: Add more debug logging in lots of places. It is currently commented out
+* Add text to Index Page
 * Rethink stats mapper class. It seems messy (BungieService.cs) Automapper?
 * Clean up BungieService unused functions and think if it can be done simpler. Extentions?
-* add url button to the clas website in RequireBungieLink.cs
 
 ## Possible TODOs
 
