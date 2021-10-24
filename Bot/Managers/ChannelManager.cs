@@ -11,19 +11,20 @@ namespace Callouts
     {
         //private readonly DiscordClient Client;
         private static readonly string WelcomeChannelName = "welcome";
-        private readonly RoleManager RoleManager;
+        // private readonly RoleManager RoleManager;
         private readonly List<string> RequiredChannels = new() { WelcomeChannelName };
 
         /// <summary>
         /// ChannelManager
         /// </summary>
         /// <param name="client"></param>
-        public ChannelManager(DiscordClient client, RoleManager roleManager)
+        // public ChannelManager(DiscordClient client, RoleManager roleManager)
+        public ChannelManager(DiscordClient client)
         {
             //Client = client;
-            this.RoleManager = roleManager;
-            client.GuildAvailable += CreateRequiredChannelsOnJoin;
-            client.GuildCreated += CreateRequiredChannelsOnJoin;
+            // this.RoleManager = roleManager;
+            // client.GuildAvailable += CreateRequiredChannelsOnJoin;
+            // client.GuildCreated += CreateRequiredChannelsOnJoin;
         }
 
         public void AddRequiredChannel(string channelName)
@@ -64,16 +65,16 @@ namespace Callouts
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private async Task CreateRequiredChannelsOnJoin(DiscordClient sender, GuildCreateEventArgs e)
-        {
-            foreach (string channelName in RequiredChannels)
-            {
-                DiscordChannel channel = await GetChannel(e.Guild, channelName);
-                if (channelName == WelcomeChannelName)
-                {
-                    await RoleManager.PostWelcomeMessage(channel);
-                }
-            }
-        }
+        // private async Task CreateRequiredChannelsOnJoin(DiscordClient sender, GuildCreateEventArgs e)
+        // {
+        //     foreach (string channelName in RequiredChannels)
+        //     {
+        //         DiscordChannel channel = await GetChannel(e.Guild, channelName);
+        //         if (channelName == WelcomeChannelName)
+        //         {
+        //             // await RoleManager.PostWelcomeMessage(channel);
+        //         }
+        //     }
+        // }
     }
 }

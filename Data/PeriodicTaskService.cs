@@ -31,11 +31,11 @@ namespace Callouts.Data
                 // Bot commands channel
             }
         }
-        private async void ClearGuestRolesCallback(object? _)
-        {
-            RoleManager roleManager = serviceProvider.GetRequiredService<RoleManager>();
-            await roleManager.ClearGuestRolls();
-        }
+        // private async void ClearGuestRolesCallback(object? _)
+        // {
+        //     RoleManager roleManager = serviceProvider.GetRequiredService<RoleManager>();
+        //     await roleManager.ClearGuestRolls();
+        // }
 
         public PeriodicTaskService(IServiceProvider serviceProvider)
         {
@@ -44,7 +44,7 @@ namespace Callouts.Data
         public void StartPeriodicTimers()
         {
             CleanChannelsTimer = new Timer(CleanChannelCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(1));
-            ClearGuestRolesTimer = new Timer(ClearGuestRolesCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromDays(1));
+            // ClearGuestRolesTimer = new Timer(ClearGuestRolesCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromDays(1));
         }
 
         public void Dispose()

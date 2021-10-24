@@ -90,7 +90,7 @@ namespace Callouts
             services.AddSingleton(s => new BungieService(bungiecfg));
             services.AddSingleton<AsyncExecutionService>();
             services.AddSingleton<SchedulingService>();
-            services.AddSingleton<RoleManager>();
+            // services.AddSingleton<RoleManager>();
             services.AddSingleton<UserService>();
             services.AddSingleton<GuildManager>();
             services.AddSingleton<UserManager>();
