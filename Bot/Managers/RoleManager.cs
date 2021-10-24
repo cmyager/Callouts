@@ -119,7 +119,7 @@ namespace Callouts
                 List<DiscordComponent> buttons = new()
                 {
                     new DiscordLinkButtonComponent("https://theclanwithoutaplan.com", "Link Bungie.net Account"),
-                    new DiscordButtonComponent(ButtonStyle.Primary, $"{channel.GuildId}{GuestPassDeliminator}", "Use Guest Roll")
+                    // new DiscordButtonComponent(ButtonStyle.Primary, $"{channel.GuildId}{GuestPassDeliminator}", "Use Guest Roll")
                 };
                 var builder = new DiscordMessageBuilder();
                 builder.AddEmbed(e);
