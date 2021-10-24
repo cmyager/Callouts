@@ -106,21 +106,19 @@ namespace Callouts
         public async Task<List<DiscordGuild>> GetGuildsFromUserId(ulong userId)
         {
             List<DiscordGuild> userGuilds = new();
-            // BIG TODO
-            try
+            foreach ((ulong _, DiscordGuild guild) in Client.Guilds)
             {
-
-                foreach ((ulong _, DiscordGuild guild) in Client.Guilds)
+                try
                 {
                     if ((await guild.GetMemberAsync(userId)) != null)
                     {
                         userGuilds.Add(guild);
                     }
                 }
-                userGuilds = userGuilds.OrderBy(p => p.Name).ToList();
+                catch (Exception) { }
+
             }
-            catch (Exception)
-            { }
+            userGuilds = userGuilds.OrderBy(p => p.Name).ToList();
             return userGuilds;
         }
 
