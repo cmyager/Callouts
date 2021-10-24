@@ -9,6 +9,8 @@
 * DM Reports: Allow a user to request a raid report in a private channel. This worked in my old python version
 * Redo Create Event Page: make it pretty / add Event RSVP
 * Fix Roles: I need to figure out more of how this works before turning it on.
+* Login is not viewable on mobile
+* reduce api calls. I think there are a few times where it gets throttled
 
 ### Minor
 
@@ -21,6 +23,7 @@
 * Robust !help commands throughout
 * Clean channel for bot-commands and periodic task for it
 * add url button to the clan website in RequireBungieLink.cs
+* usernames show up multiple times when tagged in a raid report if they swapped characters
 
 ## TODO: Bugs
 
