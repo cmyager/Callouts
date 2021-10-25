@@ -24,6 +24,7 @@
 * Clean channel for bot-commands and periodic task for it
 * add url button to the clan website in RequireBungieLink.cs
 * usernames show up multiple times when tagged in a raid report if they swapped characters
+* Don't delete the last raid report even if it is old because it has the get report button
 
 ## TODO: Bugs
 
